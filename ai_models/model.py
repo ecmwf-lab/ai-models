@@ -9,9 +9,9 @@ import logging
 import os
 from functools import cached_property
 from importlib import import_module
-import entrypoints
 
 import climetlab as cml
+import entrypoints
 from multiurl import download
 
 LOG = logging.getLogger(__name__)
