@@ -79,7 +79,7 @@ class FileOutput:
         self.output = cml.new_grib_output(
             path,
             split_output=True,
-            # class_="ml",
+            class_="ml",
             expver=owner.expver,
             edition=2,
         )
