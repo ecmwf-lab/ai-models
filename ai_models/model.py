@@ -8,7 +8,6 @@
 import logging
 import os
 from functools import cached_property
-from importlib import import_module
 
 import climetlab as cml
 import entrypoints
@@ -144,9 +143,11 @@ class Model:
 
 
 def available_models():
-    for e in entrypoints.get_group_all(f"ai-models.model"):
-        print(e.name)
+    result = {}
+    for e in entrypoints.get_group_all("ai_models.model"):
+        result[e.name] = e
+    return result
 
 
 def load_model(name, **kwargs):
-    return import_module(f".{name}", package=__name__ + "s").model(**kwargs)
+    return available_models()[name].load()(**kwargs)

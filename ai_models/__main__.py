@@ -142,9 +142,9 @@ def main():
         format="%(asctime)s %(levelname)s %(message)s",
     )
 
-    if not check_gpus():
-        LOG.error("ai-models must be run on a node with GPUs")
-        sys.exit(1)
+    # if not check_gpus():
+    #     LOG.error("ai-models must be run on a node with GPUs")
+    #     sys.exit(1)
 
     model = load_model(args.model, **vars(args))
 
