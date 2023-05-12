@@ -32,17 +32,20 @@ assert version
 setuptools.setup(
     name="ai-models",
     version=version,
-    description="A run ai weather models",
+    description="A package to run AI weather models",
     long_description=read("README.md"),
     author="European Centre for Medium-Range Weather Forecasts (ECMWF)",
     author_email="software.support@ecmwf.int",
     license="Apache License Version 2.0",
-    url="https://github.com/ecmwf/ai-models",
+    url="https://github.com/ecmwf-lab/ai-models",
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=["entrypoints", "climetlab>=0.14.25", "multiurl"],
     zip_safe=True,
     keywords="tool",
+    entry_points={
+        "console_scripts": ["ai-models=ai_models.__main__:main"],
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
