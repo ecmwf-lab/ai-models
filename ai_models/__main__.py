@@ -33,6 +33,9 @@ def check_gpus():
 def main():
     parser = argparse.ArgumentParser()
 
+    # See https://github.com/pytorch/pytorch/issues/77764
+    os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
     parser.add_argument(
         "--models",
         action="store_true",

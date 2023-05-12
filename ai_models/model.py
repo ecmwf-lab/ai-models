@@ -79,7 +79,7 @@ class FileOutput:
         self.output = cml.new_grib_output(
             path,
             split_output=True,
-            class_="ml",
+            # class_="ml",
             expver=owner.expver,
             edition=2,
         )
@@ -140,6 +140,21 @@ class Model:
                 LOG.info("Downloading %s", asset)
                 download(self.download_url.format(file=file), asset + ".download")
                 os.rename(asset + ".download", asset)
+
+    @cached_property
+    def device(self):
+        import torch
+        device = "cpu"
+
+        if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+            device = "mps"
+
+        if torch.cuda.is_available() and torch.cuda.is_built():
+            device = "cuda"
+
+        LOG.info("Using device '%s', the speed of inference depends greatly of the device.", device.upper())
+
+        return device
 
 
 def available_models():
