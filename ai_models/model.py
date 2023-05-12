@@ -56,6 +56,45 @@ class MarsInput:
         return self.fields_sfc + self.fields_pl
 
 
+class CdsInput:
+    def __init__(self, owner, **kwargs):
+        self.owner = owner
+
+    @cached_property
+    def fields_sfc(self):
+        LOG.info("Loading surface fields from the CDS")
+        request = dict(
+            product_type="reanalysis",
+            date=self.owner.date,
+            time=self.owner.time,
+            param=self.owner.param_sfc,
+            grid=self.owner.grid,
+            area=self.owner.area,
+            levtype="sfc",
+        )
+        return cml.load_source("cds", "reanalysis-era5-single-levels", request)
+
+    @cached_property
+    def fields_pl(self):
+        LOG.info("Loading pressure fields  from the CDS")
+        param, level = self.owner.param_level_pl
+        request = dict(
+            product_type="reanalysis",
+            date=self.owner.date,
+            time=self.owner.time,
+            param=param,
+            level=level,
+            grid=self.owner.grid,
+            area=self.owner.area,
+            levtype="pl",
+        )
+        return cml.load_source("cds", "reanalysis-era5-pressure-levels", request)
+
+    @cached_property
+    def all_fields(self):
+        return self.fields_sfc + self.fields_pl
+
+
 class FileInput:
     def __init__(self, owner, file, **kwargs):
         self.file = file
@@ -75,7 +114,13 @@ class FileInput:
 
 
 class FileOutput:
-    def __init__(self, owner, path, **kwargs):
+    def __init__(self, owner, path, expver, **kwargs):
+        if path is None:
+            path = kwargs["model"] + ".grib"
+
+        if expver is None:
+            expver = owner.expver
+
         LOG.info("Writting results to %s", path)
         self.path = path
         self.owner = owner
@@ -83,7 +128,7 @@ class FileOutput:
             path,
             split_output=True,
             class_="ml",
-            expver=owner.expver,
+            expver=expver,
             edition=2,
         )
 
@@ -91,7 +136,11 @@ class FileOutput:
         self.output.write(*args, **kwargs)
 
 
-INPUTS = dict(mars=MarsInput, file=FileInput)
+INPUTS = dict(
+    mars=MarsInput,
+    file=FileInput,
+    cds=CdsInput,
+)
 
 OUTPUTS = dict(file=FileOutput)
 
@@ -130,7 +179,8 @@ class Stepper:
             "Done %s out of %s in %s (%sh), ETA: %s.",
             i + 1,
             self.num_steps,
-            seconds(now - self.last),step,
+            seconds(now - self.last),
+            step,
             seconds(eta),
         )
         self.last = now

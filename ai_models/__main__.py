@@ -9,25 +9,11 @@ import argparse
 import logging
 import os
 import shlex
-import subprocess
 import sys
 
 from .model import available_models, load_model
 
 LOG = logging.getLogger(__name__)
-
-
-def check_gpus():
-    try:
-        n = 0
-        for line in subprocess.check_output(["nvidia-smi", "-L"], text=True).split(
-            "\n"
-        ):
-            if line.startswith("GPU"):
-                n += 1
-        return n
-    except subprocess.CalledProcessError:
-        return 0
 
 
 def main():
@@ -98,8 +84,12 @@ def main():
 
     parser.add_argument(
         "--path",
-        default="out.grib",
         help="Path where to write the output of the model",
+    )
+
+    parser.add_argument(
+        "--expver",
+        help="Set the experiment version of the model output",
     )
 
     parser.add_argument(
@@ -145,17 +135,14 @@ def main():
         format="%(asctime)s %(levelname)s %(message)s",
     )
 
-    # if not check_gpus():
-    #     LOG.error("ai-models must be run on a node with GPUs")
-    #     sys.exit(1)
-
     try:
         model = load_model(args.model, **vars(args))
         model.run()
     except FileNotFoundError as e:
         LOG.exception(e)
         LOG.error(
-            "It is possible that some files requited by %s are missing.", args.model
+            "It is possible that some files requited by %s are missing.",
+            args.model,
         )
         LOG.error("Rerun the command as:")
         LOG.error(
