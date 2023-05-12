@@ -9,7 +9,7 @@ pip install ai-models-fourcastnet
 
 Although the models will run on a CPU, they will run very slowly. We recommend using a GPU.
 
-### Command line options
+## Command line options
 
 It has the following options:
 
