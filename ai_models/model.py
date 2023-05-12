@@ -7,10 +7,13 @@
 
 import logging
 import os
+import sys
+import time
 from functools import cached_property
 
 import climetlab as cml
 import entrypoints
+from climetlab.utils.humanize import seconds
 from multiurl import download
 
 LOG = logging.getLogger(__name__)
@@ -93,6 +96,51 @@ INPUTS = dict(mars=MarsInput, file=FileInput)
 OUTPUTS = dict(file=FileOutput)
 
 
+class Timer:
+    def __init__(self, title):
+        self.title = title
+        self.start = time.time()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        elapsed = time.time() - self.start
+        LOG.info("%s: %s.", self.title, seconds(elapsed))
+
+
+class Stepper:
+    def __init__(self, step, lead_time):
+        self.step = step
+        self.lead_time = lead_time
+        self.start = time.time()
+        self.last = self.start
+        self.num_steps = lead_time // step
+        LOG.info("Starting inference for %s steps (%sh).", self.num_steps, lead_time)
+
+    def __enter__(self):
+        return self
+
+    def __call__(self, i, step):
+        now = time.time()
+        elapsed = now - self.start
+        speed = (i + 1) / elapsed
+        eta = (self.num_steps - i) / speed
+        LOG.info(
+            "Done %s out of %s in %s (%sh), ETA: %s.",
+            i + 1,
+            self.num_steps,
+            seconds(now - self.last),step,
+            seconds(eta),
+        )
+        self.last = now
+
+    def __exit__(self, *args):
+        elapsed = time.time() - self.start
+        LOG.info("Elapsed: %s.", seconds(elapsed))
+        LOG.info("Average: %s per step.", seconds(elapsed / self.num_steps))
+
+
 class Model:
     assets_extra_dir = None
 
@@ -154,11 +202,47 @@ class Model:
             device = "cuda"
 
         LOG.info(
-            "Using device '%s', the speed of inference depends greatly of the device.",
+            "Using device '%s'. The speed of inference depends greatly on the device.",
             device.upper(),
         )
 
         return device
+
+    @cached_property
+    def providers(self):
+        import platform
+
+        import GPUtil
+        import onnxruntime as ort
+
+        providers = []
+
+        if GPUtil.getAvailable():
+            providers += [
+                "CUDAExecutionProvider",  # CUDA
+            ]
+
+        if sys.platform == "darwin":
+            if platform.machine() == "arm64":
+                # This one is not working with error: CoreML does not support input dim > 16384
+                # providers += ["CoreMLExecutionProvider"]
+                pass
+
+        providers += [
+            "CPUExecutionProvider",  # CPU
+        ]
+
+        LOG.info(
+            "Using device '%s'. The speed of inference depends greatly on the device.",
+            ort.get_device(),
+        )
+        return providers
+
+    def timer(self, title):
+        return Timer(title)
+
+    def stepper(self, step):
+        return Stepper(step, self.lead_time)
 
 
 def available_models():
