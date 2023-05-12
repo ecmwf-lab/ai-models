@@ -40,7 +40,12 @@ setuptools.setup(
     url="https://github.com/ecmwf-lab/ai-models",
     packages=setuptools.find_packages(),
     include_package_data=True,
-    install_requires=["entrypoints", "climetlab>=0.14.25", "multiurl", "ecmwflibs>=0.5.3"],
+    install_requires=[
+        "entrypoints",
+        "climetlab>=0.14.25",
+        "multiurl",
+        "ecmwflibs>=0.5.3",
+    ],
     zip_safe=True,
     keywords="tool",
     entry_points={

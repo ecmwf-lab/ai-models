@@ -144,6 +144,7 @@ class Model:
     @cached_property
     def device(self):
         import torch
+
         device = "cpu"
 
         if torch.backends.mps.is_available() and torch.backends.mps.is_built():
@@ -152,7 +153,10 @@ class Model:
         if torch.cuda.is_available() and torch.cuda.is_built():
             device = "cuda"
 
-        LOG.info("Using device '%s', the speed of inference depends greatly of the device.", device.upper())
+        LOG.info(
+            "Using device '%s', the speed of inference depends greatly of the device.",
+            device.upper(),
+        )
 
         return device
 
