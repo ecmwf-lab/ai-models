@@ -9,6 +9,7 @@ import logging
 import os
 from functools import cached_property
 from importlib import import_module
+import entrypoints
 
 import climetlab as cml
 from multiurl import download
@@ -143,13 +144,8 @@ class Model:
 
 
 def available_models():
-    result = []
-    for path in os.listdir(os.path.join(os.path.dirname(__file__), "models")):
-        if path.startswith(".") or path.startswith("_"):
-            continue
-        name, _ = os.path.splitext(path)
-        result.append(name)
-    return result
+    for e in entrypoints.get_group_all(f"ai-models.model"):
+        print(e.name)
 
 
 def load_model(name, **kwargs):
