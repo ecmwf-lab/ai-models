@@ -256,7 +256,7 @@ class Model:
         if torch.backends.mps.is_available() and torch.backends.mps.is_built():
             device = "mps"
 
-        if torch.cuda.is_available() and torch.cuda.is_built():
+        if torch.cuda.is_available() and torch.backends.cuda.is_built():
             device = "cuda"
 
         LOG.info(
