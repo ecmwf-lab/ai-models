@@ -19,6 +19,7 @@ pip install ai-models
 ```
 
 ## Available Models
+
 Currently, two models can be installed:
 
 ```bash
@@ -39,7 +40,15 @@ ai-models <model-name>
 
 Replace `<model-name>` with the name of the specific AI model you want to run.
 
-By default, the model will be run for a 10-day lead time, using yesterday's 12Z analysis from ECMWF's MARS archive. You can change the defaults using the available command line options, as described below.
+By default, the model will be run for a 10-day lead time (240 hours), using yesterday's 12Z analysis from ECMWF's MARS archive.
+
+To produce a 15 days forecast, use the `--lead-time HOURS` option:
+
+```bash
+ai-models --lead-time 360 <model-name>
+```
+
+You can change the other defaults using the available command line options, as described below.
 
 ## Performances Considerations
 
@@ -56,8 +65,8 @@ To download the assets before running a model, use the following command:
 ```bash
 ai-models --download-assets <model-name>
 ```
-The assets will be downloaded if needed and stored in the current directory. You can provide a different directory to store the assets:
 
+The assets will be downloaded if needed and stored in the current directory. You can provide a different directory to store the assets:
 
 ```bash
 ai-models --download-assets --assets <some-directory> <model-name>
@@ -88,11 +97,9 @@ By default, `ai-models`  use yesterday's 12Z analysis from ECMWF, fetched from t
 
 To change the date or time, use the `--date` and `--time` options, respectively:
 
-
 ```bash
 ai-models --date YYYYMMDD --time HHMM <model-name>
 ```
-
 
 ### From the CDS
 
@@ -115,10 +122,10 @@ ai-models --file <some-grib-file> <model-name>
 The GRIB file can contain more fields than the ones required by the model. The `ai-models` command will automatically select the necessary fields from the file.
 
 To find out the list of fields needed by a specific model as initial conditions, use the following command:
+
 ```bash
  ai-models --fields <model-name>
  ```
-
 
 ## Output
 
@@ -139,7 +146,6 @@ It has the following options:
 - `--help`: Displays this help message.
 - `--models`: Lists all installed models.
 - `--debug`: Turns on debug mode. This will print additional information to the console.
-
 
 ### Input
 
