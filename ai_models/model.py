@@ -302,6 +302,16 @@ class Model:
     def stepper(self, step):
         return Stepper(step, self.lead_time)
 
+    def print_fields(self):
+        param, level = self.param_level_pl
+        print("Grid:", self.grid)
+        print("Area:", self.area)
+        print("Pressure levels:")
+        print("   Levels:", level)
+        print("   Params:", param)
+        print("Single levels:")
+        print("   Params:", self.param_sfc)
+
 
 def load_model(name, **kwargs):
     return available_models()[name].load()(**kwargs)

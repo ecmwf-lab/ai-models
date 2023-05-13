@@ -90,6 +90,12 @@ def main():
     )
 
     parser.add_argument(
+        "--fields",
+        help="Show the fields needed as input for the model",
+        action="store_true",
+    )
+
+    parser.add_argument(
         "--expver",
         help="Set the experiment version of the model output",
     )
@@ -138,13 +144,19 @@ def main():
     if args.file is not None:
         args.input = "file"
 
-    logging.basicConfig(
-        level="DEBUG" if args.debug else "INFO",
-        format="%(asctime)s %(levelname)s %(message)s",
-    )
+    if not args.fields:
+        logging.basicConfig(
+            level="DEBUG" if args.debug else "INFO",
+            format="%(asctime)s %(levelname)s %(message)s",
+        )
+
+    model = load_model(args.model, **vars(args))
+
+    if args.fields:
+        model.print_fields()
+        sys.exit(0)
 
     try:
-        model = load_model(args.model, **vars(args))
         model.run()
     except FileNotFoundError as e:
         LOG.exception(e)

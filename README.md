@@ -1,8 +1,25 @@
 # ai-models
 
-The `ai-models` command is used to run AI-based weather forecasting models. These models needs to be installed independently.
+The `ai-models` command is used to run AI-based weather forecasting models. These models need to be installed independently.
 
-Currently, too models can be installed:
+## Prerequisites
+
+Before using the `ai-models` command, ensure you have the following prerequisites:
+
+- Python 3.10 (it may work with different versions, but it has not been tested with 3.10)
+- ECMWF and/or CDS account for accessing input data (if applicable)
+- GPU for optimal performance (strongly recommended)
+
+## Installation
+
+To install the `ai-models` command, run the following command:
+
+```bash
+pip install ai-models
+```
+
+## Available Models
+Currently, two models can be installed:
 
 ```bash
 pip install ai-models-panguweather
@@ -20,25 +37,33 @@ To run model, make sure it has been installed, then simply run:
 ai-models <model-name>
 ```
 
-By default, the model will be run for 10 days lead time, getting its initial conditions from ECMWF's MARS archive. See below how these defaults can be changed.
+Replace `<model-name>` with the name of the specific AI model you want to run.
+
+By default, the model will be run for a 10-day lead time, using yesterday's 12Z analysis from ECMWF's MARS archive. You can change the defaults using the available command line options, as described below.
+
+## Performances Considerations
+
+The AI models can run on a CPU; however, they perform significantly better on a GPU. A 10-day forecast can take several hours on a CPU but only around one minute on a modern GPU.
+
+:warning: **We strongly recommend running these models on a computer equipped with a GPU for optimal performance.**
 
 ## Assets
 
-AI models rely on weigths that have been created during training. So the first time you run a model, you will need to download the trained weigths, as well possibly some other assets.
+The AI models rely on weights and other assets created during training. The first time you run a model, you will need to download the trained weights and any additional required assets.
 
-The following command will download the assets needed by the model before running it. Assets will only be downloaded if needed, and they will be written  in the current directory,
+To download the assets before running a model, use the following command:
 
 ```bash
 ai-models --download-assets <model-name>
 ```
+The assets will be downloaded if needed and stored in the current directory. You can provide a different directory to store the assets:
 
-You can provide a different directory to store the assets:
 
 ```bash
-ai-models --assets <some-directory> --download-assets <model-name>
+ai-models --download-assets --assets <some-directory> <model-name>
 ```
 
-Then later, simply use:
+Then, later on, simply use:
 
 ```bash
 ai-models --assets <some-directory>  <model-name>
@@ -51,49 +76,95 @@ export AI_MODELS_ASSETS=<some-directory>
 ai-models <model-name>
 ```
 
-To keep the assets directory organised, you can use the `--assets-sub-directory` option that will store the assets of each models in its own subdirectory of the `--assets` directory.
+For better organisation of the assets directory, you can use the `--assets-sub-directory` option. This option will store the assets of each model in its own subdirectory within the specified assets directory.
 
 ## Input data
 
+The models require input data (initial conditions) to run. You can provide the input data using different sources, as described below:
+
 ### From MARS
+
+By default, `ai-models`  use yesterday's 12Z analysis from ECMWF, fetched from the Centre's MARS archive using the [ECMWF WebAPI](https://www.ecmwf.int/en/computing/software/ecmwf-web-api). You will need an ECMWF account to access that service.
+
+To change the date or time, use the `--date` and `--time` options, respectively:
+
+
+```bash
+ai-models --date YYYYMMDD --time HHMM <model-name>
+```
+
 
 ### From the Copernicus Climate Data Store (CDS)
 
+You can start the models using ERA5 (ECMWF Reanalysis version 5) data for the [Copernicus Climate Data Store (CDS)](https://cds.climate.copernicus.eu/). You will need to create an account on the CDS. The data will be downloaded using the [CDS API](https://cds.climate.copernicus.eu/api-how-to).
+
+To access the CDS, simply add `--input cds` on the command line. Please note that ERA5 data is added to the CDS with a delay, so you will also have to provide a date with `--date YYYYMMDD`.
+
+```bash
+ai-models --input cds --date 20230110 --time 0000 <model-name>
+```
+
 ### From a local file
 
-## Performances
+If you have input data in the GRIB format, you can provide the file using the `--file` option:
 
-Although the models will run on a CPU, they will run very slowly. A 10-day forecast will take around one minute on a modern GPU, while the same forecast can take several hours on a CPU.
+```bash
+ai-models --file <some-grib-file> <model-name>
+```
 
-:warning: **We strongly recommend to run these models on a computer equipped with  a GPU.**
+The GRIB file can contain more fields than the ones required by the model. The `ai-models` command will automatically select the necessary fields from the file.
+
+To find out the list of fields needed by a specific model as initial conditions, use the following command:
+```bash
+ ai-models --fields <model-name>
+ ```
+
+
+## Output
+
+By default, the model output will be written in GRIB format in a file called `<model-name>.grib`. You can change the file name with the option `--path <file-name>`. If the path you specify contains placeholders between `{` and `}`, multiple files will be created based on the [eccodes](https://confluence.ecmwf.int/display/ECC) keys. For example:
+
+```bash
+ ai-models --path 'out-{step}.grib' <model-name>
+ ```
+
+This command will create a file for each forecasted time step.
+
+If you want to disable writing the output to a file, use the `--output none` option.
 
 ## Command line options
 
 It has the following options:
 
 - `--help`: Displays this help message.
-- `--models`: Lists all available models.
+- `--models`: Lists all installed models.
 - `--debug`: Turns on debug mode. This will print additional information to the console.
+
 
 ### Input
 
-- `--input INPUT`: The input source for the model. This can be a file, a directory, or a URL.
-- `--file FILE`: The specific file to use as input. This option is only relevant if the input source is a directory.
+- `--input INPUT`: The input source for the model. This can be a `mars`, `cds` or `file`.
+- `--file FILE`: The specific file to use as input. This option will set `--source` to `file`.
 
 - `--date DATE`: The analysis date for the model. This defaults to yesterday.
-- `--time TIME`: The analysis time for the model. This defaults to 12:00 PM.
+- `--time TIME`: The analysis time for the model. This defaults to 1200.
 
 ### Output
 
-- `--output OUTPUT`: The output destination for the model. This can be a file, a directory, or a URL.
-- `--path PATH`: The path to write the output of the model. This defaults to the current working directory.
+- `--output OUTPUT`: The output destination for the model. Values are `file` or `none`.
+- `--path PATH`: The path to write the output of the model.
+
+### Run
+
+- `--lead-time HOURS`: The number of hours to forecast. The default is 240 (10 days).
 
 ### Assets management
 
-- `--assets ASSETS`: The path to the directory containing the model assets. These assets are typically weights and other files that are needed to run the model.
-- `--assets-sub-directory`: The subdirectory of the assets directory to load assets from. This is only relevant if the assets directory contains multiple subdirectories.
+- `--assets ASSETS`: Specifies the path to the directory containing the model assets. The default is the current directory, but you can override it by setting the ``$AI_MODELS_ASSETS` environment variable.
+- `--assets-sub-directory`: Enables organising assets in `<assets-directory>/<model-name>` subdirectories.
 - `--download-assets`: Downloads the assets if they do not exist.
 
 ### Misc. options
 
-- `--expver EXPVER`: The experiment version of the model output. This is typically used to track different versions of the model.
+- `--fields`: Print the list of fields needed by a model as initial conditions.
+- `--expver EXPVER`: The experiment version of the model output.
