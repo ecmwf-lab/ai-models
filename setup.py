@@ -45,6 +45,7 @@ setuptools.setup(
         "climetlab>=0.14.25",
         "multiurl",
         "ecmwflibs>=0.5.3",
+        "gputil",
     ],
     zip_safe=True,
     keywords="tool",
