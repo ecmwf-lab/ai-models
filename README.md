@@ -160,7 +160,7 @@ It has the following options:
 
 ### Assets management
 
-- `--assets ASSETS`: Specifies the path to the directory containing the model assets. The default is the current directory, but you can override it by setting the ``$AI_MODELS_ASSETS` environment variable.
+- `--assets ASSETS`: Specifies the path to the directory containing the model assets. The default is the current directory, but you can override it by setting the `$AI_MODELS_ASSETS` environment variable.
 - `--assets-sub-directory`: Enables organising assets in `<assets-directory>/<model-name>` subdirectories.
 - `--download-assets`: Downloads the assets if they do not exist.
 
