@@ -11,7 +11,7 @@ import os
 import shlex
 import sys
 
-from .model import available_models, load_model
+from .model import available_inputs, available_models, available_outputs, load_model
 
 LOG = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ def main():
         "--input",
         default="mars",
         help="Source to use",
+        choices=available_inputs(),
     )
 
     parser.add_argument(
@@ -48,7 +49,8 @@ def main():
     parser.add_argument(
         "--output",
         default="file",
-        help="Source to use",
+        help="Where to output the results",
+        choices=available_outputs(),
     )
 
     parser.add_argument(
@@ -130,6 +132,12 @@ def main():
     if args.assets_sub_directory:
         args.assets = os.path.join(args.assets, args.model)
 
+    if args.path is None:
+        args.path = f"{args.model}.grib"
+
+    if args.file is not None:
+        args.input = "file"
+
     logging.basicConfig(
         level="DEBUG" if args.debug else "INFO",
         format="%(asctime)s %(levelname)s %(message)s",
@@ -146,7 +154,8 @@ def main():
         )
         LOG.error("Rerun the command as:")
         LOG.error(
-            "   %s", shlex.join([sys.argv[0], "--download-assets"] + sys.argv[1:])
+            "   %s",
+            shlex.join([sys.argv[0], "--download-assets"] + sys.argv[1:]),
         )
         sys.exit(1)
 

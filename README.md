@@ -2,12 +2,29 @@
 
 The `ai-models` command is used to run AI-based weather forecasting models. These models needs to be installed independently.
 
+Currently, too models can be installed:
+
 ```bash
 pip install ai-models-panguweather
 pip install ai-models-fourcastnet
 ```
 
-Although the models will run on a CPU, they will run very slowly. We recommend using a GPU.
+See [ai-models-panguweather](https://github.com/ecmwf-lab/ai-models-panguweather) and [ai-models-fourcastnet](https://github.com/ecmwf-lab/ai-models-fourcastnet).
+ for more details about these models.
+
+## Running the models
+
+## Weights (a.k.a assets)
+
+
+
+## Input data
+
+## Performances
+
+Although the models will run on a CPU, they will run very slowly.
+
+** :warning: We strongly recommend to run these models on a computer equipped with  a GPU.**
 
 ## Command line options
 

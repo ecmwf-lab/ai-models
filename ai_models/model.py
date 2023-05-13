@@ -115,13 +115,10 @@ class FileInput:
 
 class FileOutput:
     def __init__(self, owner, path, expver, **kwargs):
-        if path is None:
-            path = kwargs["model"] + ".grib"
-
         if expver is None:
             expver = owner.expver
 
-        LOG.info("Writting results to %s", path)
+        LOG.info("Writting results to %s.", path)
         self.path = path
         self.owner = owner
         self.output = cml.new_grib_output(
@@ -136,13 +133,24 @@ class FileOutput:
         self.output.write(*args, **kwargs)
 
 
+class NoneOutput:
+    def __init__(self, *args, **kwargs):
+        LOG.info("Results will not be written.")
+
+    def write(self, *args, **kwargs):
+        pass
+
+
 INPUTS = dict(
     mars=MarsInput,
     file=FileInput,
     cds=CdsInput,
 )
 
-OUTPUTS = dict(file=FileOutput)
+OUTPUTS = dict(
+    file=FileOutput,
+    none=NoneOutput,
+)
 
 
 class Timer:
@@ -295,6 +303,10 @@ class Model:
         return Stepper(step, self.lead_time)
 
 
+def load_model(name, **kwargs):
+    return available_models()[name].load()(**kwargs)
+
+
 def available_models():
     result = {}
     for e in entrypoints.get_group_all("ai_models.model"):
@@ -302,5 +314,9 @@ def available_models():
     return result
 
 
-def load_model(name, **kwargs):
-    return available_models()[name].load()(**kwargs)
+def available_inputs():
+    return sorted(INPUTS.keys())
+
+
+def available_outputs():
+    return sorted(OUTPUTS.keys())
