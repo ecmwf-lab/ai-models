@@ -290,6 +290,8 @@ class Model:
             "CPUExecutionProvider",  # CPU
         ]
 
+        LOG.info("ONNXRuntime providers: %s", providers)
+
         LOG.info(
             "Using device '%s'. The speed of inference depends greatly on the device.",
             ort.get_device(),
