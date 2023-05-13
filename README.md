@@ -24,7 +24,7 @@ See [ai-models-panguweather](https://github.com/ecmwf-lab/ai-models-panguweather
 
 Although the models will run on a CPU, they will run very slowly.
 
-** :warning: We strongly recommend to run these models on a computer equipped with  a GPU.**
+:warning: **We strongly recommend to run these models on a computer equipped with  a GPU.**
 
 ## Command line options
 
