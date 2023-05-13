@@ -56,6 +56,19 @@ The AI models can run on a CPU; however, they perform significantly better on a 
 
 :warning: **We strongly recommend running these models on a computer equipped with a GPU for optimal performance.**
 
+It you see the following message when running a model, it means that the ONNX runtime was not able to find a the CUDA libraries on your system:
+> [W:onnxruntime:Default, onnxruntime_pybind_state.cc:541 CreateExecutionProviderInstance] Failed to create CUDAExecutionProvider. Please reference <https://onnxruntime.ai/docs/reference/execution-providers/CUDA-ExecutionProvider.html#requirements> to ensure all dependencies are met.
+
+To fix this issue, we suggest that you install `ai-models` in a [conda](https://docs.conda.io/en/latest/) environment and install the CUDA libraries in that environment. For example:
+
+```bash
+conda create -n ai-models python=3.10
+conda activate ai-models
+conda install cudatoolkit
+pip install ai-models
+...
+```
+
 ## Assets
 
 The AI models rely on weights and other assets created during training. The first time you run a model, you will need to download the trained weights and any additional required assets.
