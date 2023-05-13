@@ -6,9 +6,9 @@ The `ai-models` command is used to run AI-based weather forecasting models. Thes
 
 Before using the `ai-models` command, ensure you have the following prerequisites:
 
-- Python 3.10 (it may work with different versions, but it has not been tested with 3.10)
-- ECMWF and/or CDS account for accessing input data (if applicable)
-- GPU for optimal performance (strongly recommended)
+- Python 3.10 (it may work with different versions, but it has not been tested with 3.10).
+- An ECMWF and/or CDS account for accessing input data (see below for more details).
+- A computed with a GPU for optimal performance (strongly recommended).
 
 ## Installation
 
@@ -94,7 +94,7 @@ ai-models --date YYYYMMDD --time HHMM <model-name>
 ```
 
 
-### From the Copernicus Climate Data Store (CDS)
+### From the CDS
 
 You can start the models using ERA5 (ECMWF Reanalysis version 5) data for the [Copernicus Climate Data Store (CDS)](https://cds.climate.copernicus.eu/). You will need to create an account on the CDS. The data will be downloaded using the [CDS API](https://cds.climate.copernicus.eu/api-how-to).
 
@@ -104,7 +104,7 @@ To access the CDS, simply add `--input cds` on the command line. Please note tha
 ai-models --input cds --date 20230110 --time 0000 <model-name>
 ```
 
-### From a local file
+### From a GRIB file
 
 If you have input data in the GRIB format, you can provide the file using the `--file` option:
 
