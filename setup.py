@@ -43,7 +43,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         "entrypoints",
-        "climetlab>=0.14.25",
+        "climetlab>=0.15.0",
         "multiurl",
         "ecmwflibs>=0.5.3",
         "gputil",
