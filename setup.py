@@ -34,6 +34,7 @@ setuptools.setup(
     version=version,
     description="A package to run AI weather models",
     long_description=read("README.md"),
+    long_description_content_type="text/markdown",
     author="European Centre for Medium-Range Weather Forecasts (ECMWF)",
     author_email="software.support@ecmwf.int",
     license="Apache License Version 2.0",
