@@ -243,6 +243,7 @@ class Model:
         for file in self.download_files:
             asset = os.path.realpath(os.path.join(self.assets, file))
             if not os.path.exists(asset):
+                os.makedirs(os.path.dirname(asset))
                 LOG.info("Downloading %s", asset)
                 download(self.download_url.format(file=file), asset + ".download")
                 os.rename(asset + ".download", asset)
