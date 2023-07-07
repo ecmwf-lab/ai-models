@@ -167,10 +167,8 @@ def main():
     args.labeling = dict(kv.split("=") for kv in args.labeling)
     args_dict = vars(args)
 
-    if "class_" in args_dict:
-        assert not "class" in args_dict["labeling"]
-        args_dict["labeling"]["class"] = args_dict.pop("class_")
-    exit()
+    if args_dict["class_"]:
+        args_dict["labeling"]["class"] = args.dict.pop("class_")
 
     model = load_model(args.model, **args_dict)
 

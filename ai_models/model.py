@@ -118,7 +118,7 @@ class FileOutput:
         if expver is None:
             expver = owner.expver
 
-        labeling = kwargs.get(labeling, {})
+        labeling = kwargs.get("labeling", {})
         if "class_" not in labeling and "class" not in labeling:
             labeling["class"] = "ml"
 
