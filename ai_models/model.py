@@ -118,15 +118,19 @@ class FileOutput:
         if expver is None:
             expver = owner.expver
 
+        labeling = kwargs.get(labeling, {})
+        if "class_" not in labeling and "class" not in labeling:
+            labeling["class"] = "ml"
+
         LOG.info("Writting results to %s.", path)
         self.path = path
         self.owner = owner
         self.output = cml.new_grib_output(
             path,
             split_output=True,
-            class_="ml",
             expver=expver,
             edition=2,
+            **labeling,
         )
 
     def write(self, *args, **kwargs):

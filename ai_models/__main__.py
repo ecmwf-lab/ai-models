@@ -101,6 +101,20 @@ def main():
     )
 
     parser.add_argument(
+        "--class",
+        help="Set the 'class' metadata of the model output",
+        metavar="CLASS",
+        dest="class_",
+    )
+
+    parser.add_argument(
+        "--labeling",
+        help="Set additional metadata labeling in the model output",
+        metavar="KEY=VALUE",
+        action="append",
+    )
+
+    parser.add_argument(
         "--num-threads",
         type=int,
         default=1,
@@ -150,7 +164,15 @@ def main():
             format="%(asctime)s %(levelname)s %(message)s",
         )
 
-    model = load_model(args.model, **vars(args))
+    args.labeling = dict(kv.split("=") for kv in args.labeling)
+    args_dict = vars(args)
+
+    if "class_" in args_dict:
+        assert not "class" in args_dict["labeling"]
+        args_dict["labeling"]["class"] = args_dict.pop("class_")
+    exit()
+
+    model = load_model(args.model, **args_dict)
 
     if args.fields:
         model.print_fields()
