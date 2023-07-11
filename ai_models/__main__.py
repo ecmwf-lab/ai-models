@@ -172,7 +172,7 @@ def main():
     if args.class_ is not None:
         metadata["class"] = args.class_
 
-    model = load_model(args.model, metadata)
+    model = load_model(args.model, **metadata)
 
     if args.fields:
         model.print_fields()
