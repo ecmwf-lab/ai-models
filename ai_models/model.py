@@ -114,9 +114,9 @@ class FileInput:
 
 
 class FileOutput:
-    def __init__(self, owner, path, labeling, **kwargs):
-        labeling.setdefault("expver", owner.expver)
-        labeling.setdefault("class", "ml")
+    def __init__(self, owner, path, metadata, **kwargs):
+        metadata.setdefault("expver", owner.expver)
+        metadata.setdefault("class", "ml")
 
         LOG.info("Writting results to %s.", path)
         self.path = path
@@ -125,7 +125,7 @@ class FileOutput:
             path,
             split_output=True,
             edition=2,
-            **labeling,
+            **metadata,
         )
 
     def write(self, *args, **kwargs):

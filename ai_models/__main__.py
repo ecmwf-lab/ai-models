@@ -97,19 +97,19 @@ def main():
 
     parser.add_argument(
         "--expver",
-        help="Set the experiment version of the model output",
+        help="Set the experiment version of the model output. Has higher priority than --metadata.",
     )
 
     parser.add_argument(
         "--class",
-        help="Set the 'class' metadata of the model output",
+        help="Set the 'class' metadata of the model output. Has higher priority than --metadata.",
         metavar="CLASS",
         dest="class_",
     )
 
     parser.add_argument(
-        "--labeling",
-        help="Set additional metadata labeling in the model output",
+        "--metadata",
+        help="Set additional metadata metadata in the model output",
         metavar="KEY=VALUE",
         action="append",
     )
@@ -164,15 +164,15 @@ def main():
             format="%(asctime)s %(levelname)s %(message)s",
         )
 
-    labeling = dict(kv.split("=") for kv in args.labeling)
+    metadata = dict(kv.split("=") for kv in args.metadata)
 
     if args.expver is not None:
-        labeling["expver"] = args.expver
+        metadata["expver"] = args.expver
 
     if args.class_ is not None:
-        labeling["class"] = args.class_
+        metadata["class"] = args.class_
 
-    model = load_model(args.model, labeling)
+    model = load_model(args.model, metadata)
 
     if args.fields:
         model.print_fields()

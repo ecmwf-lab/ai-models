@@ -188,4 +188,4 @@ It has the following options:
 - `--fields`: Print the list of fields needed by a model as initial conditions.
 - `--expver EXPVER`: The experiment version of the model output.
 - `--class CLASS`: The 'class' metadata of the model output.
-- `--labeling KEY=VALUE`: Additional metadata labeling in the model output
+- `--metadata KEY=VALUE`: Additional metadata metadata in the model output
