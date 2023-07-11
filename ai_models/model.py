@@ -114,13 +114,9 @@ class FileInput:
 
 
 class FileOutput:
-    def __init__(self, owner, path, expver, **kwargs):
-        if expver is None:
-            expver = owner.expver
-
-        labeling = kwargs.get("labeling", {})
-        if "class_" not in labeling and "class" not in labeling:
-            labeling["class"] = "ml"
+    def __init__(self, owner, path, labeling, **kwargs):
+        labeling.setdefault("expver", owner.expver)
+        labeling.setdefault("class", "ml")
 
         LOG.info("Writting results to %s.", path)
         self.path = path
@@ -128,7 +124,6 @@ class FileOutput:
         self.output = cml.new_grib_output(
             path,
             split_output=True,
-            expver=expver,
             edition=2,
             **labeling,
         )

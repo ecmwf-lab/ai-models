@@ -164,13 +164,15 @@ def main():
             format="%(asctime)s %(levelname)s %(message)s",
         )
 
-    args.labeling = dict(kv.split("=") for kv in args.labeling)
-    args_dict = vars(args)
+    labeling = dict(kv.split("=") for kv in args.labeling)
 
-    if args_dict["class_"]:
-        args_dict["labeling"]["class"] = args.dict.pop("class_")
+    if args.expver is not None:
+        labeling["expver"] = args.expver
 
-    model = load_model(args.model, **args_dict)
+    if args.class_ is not None:
+        labeling["class"] = args.class_
+
+    model = load_model(args.model, labeling)
 
     if args.fields:
         model.print_fields()
