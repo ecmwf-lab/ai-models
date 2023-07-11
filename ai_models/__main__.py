@@ -164,15 +164,15 @@ def main():
             format="%(asctime)s %(levelname)s %(message)s",
         )
 
-    metadata = dict(kv.split("=") for kv in args.metadata)
+    args.metadata = dict(kv.split("=") for kv in args.metadata)
 
     if args.expver is not None:
-        metadata["expver"] = args.expver
+        args.metadata["expver"] = args.expver
 
     if args.class_ is not None:
-        metadata["class"] = args.class_
+        args.metadata["class"] = args.class_
 
-    model = load_model(args.model, **metadata)
+    model = load_model(args.model, **vars(args))
 
     if args.fields:
         model.print_fields()
