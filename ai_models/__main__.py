@@ -164,6 +164,9 @@ def main():
             format="%(asctime)s %(levelname)s %(message)s",
         )
 
+    if args.metadata is None:
+        args.metadata = []
+
     args.metadata = dict(kv.split("=") for kv in args.metadata)
 
     if args.expver is not None:
