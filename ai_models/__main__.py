@@ -35,6 +35,14 @@ def main():
     )
 
     parser.add_argument(
+        "--requests",
+        help=(
+            "Print mars requests to stdout. Adding the string provided "
+            "in argument to the mars request. Ex: --request class=XX,stream=YY"
+        ),
+    )
+
+    parser.add_argument(
         "--input",
         default="mars",
         help="Source to use",
@@ -75,6 +83,12 @@ def main():
     parser.add_argument(
         "--assets-sub-directory",
         help="Load assets from a subdirectory of --assets based on the name of the model.",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "--assets-list",
+        help="List the assets used by the model",
         action="store_true",
     )
 
@@ -179,6 +193,14 @@ def main():
 
     if args.fields:
         model.print_fields()
+        sys.exit(0)
+
+    if args.requests:
+        model.print_requests(args.requests)
+        sys.exit(0)
+
+    if args.assets_list:
+        model.print_assets_list()
         sys.exit(0)
 
     try:

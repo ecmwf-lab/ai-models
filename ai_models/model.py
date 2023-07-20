@@ -314,6 +314,45 @@ class Model:
         print("Single levels:")
         print("   Params:", self.param_sfc)
 
+    def print_assets_list(self):
+        for file in self.download_files:
+            print(file)
+
+    def print_requests(self, extra):
+        def slashes(v):
+            if not isinstance(v, (list, tuple)):
+                v = [v]
+            v = [str(_) for _ in v]
+            return "/".join(v)
+
+        param, level = self.param_level_pl
+
+        r = dict(
+            grid=self.grid,
+            area=self.area,
+            levtype="pl",
+            levelist=level,
+            param=param,
+            target="input.grib",
+        )
+
+        def to_str(r, extra=None):
+            r = [f"{k}={slashes(v)}" for k, v in r.items()]
+            if extra:
+                r.append(extra)
+            r = ["   " + _ for _ in r]
+            r = "retrieve,\n" + ",\n".join(r)
+            return r
+
+        print(to_str(r, extra))
+        print()
+
+        r = dict(
+            levtype="sfc",
+            param=self.param_sfc,
+        )
+        print(to_str(r))
+
 
 def load_model(name, **kwargs):
     return available_models()[name].load()(**kwargs)
