@@ -35,10 +35,19 @@ def main():
     )
 
     parser.add_argument(
-        "--requests",
+        "--retrieve-requests",
         help=(
-            "Print mars requests to stdout. Adding the string provided "
-            "in argument to the mars request. Ex: --request class=XX,stream=YY"
+            "Print mars requests to stdout."
+            "Use --requests-extra to extend or overide the requests. "
+        ),
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "--requests-extra",
+        help=(
+            "Extends the retrieve requests with a list of key1=value1,key2=value."
+            " Implies --retrieve-requests."
         ),
     )
 
@@ -195,8 +204,8 @@ def main():
         model.print_fields()
         sys.exit(0)
 
-    if args.requests:
-        model.print_requests(args.requests)
+    if args.retrieve_requests or args.requests_extra:
+        model.print_requests(args.requests_extra)
         sys.exit(0)
 
     if args.assets_list:
