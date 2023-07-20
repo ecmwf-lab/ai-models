@@ -115,6 +115,7 @@ class FileInput:
 
 class FileOutput:
     def __init__(self, owner, path, metadata, **kwargs):
+        self._first = True
         metadata.setdefault("expver", owner.expver)
         metadata.setdefault("class", "ml")
 
