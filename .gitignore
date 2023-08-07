@@ -165,3 +165,5 @@ cython_debug/
 *.swp
 *.npy
 *.download
+?
+?.*

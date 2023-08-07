@@ -5,6 +5,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import datetime
 import logging
 import os
 import sys
@@ -19,80 +20,76 @@ from multiurl import download
 LOG = logging.getLogger(__name__)
 
 
-class MarsInput:
+class RequestBasedInput:
     def __init__(self, owner, **kwargs):
         self.owner = owner
 
     @cached_property
     def fields_sfc(self):
-        LOG.info("Loading surface fields from MARS")
-        request = dict(
-            date=self.owner.date,
-            time=self.owner.time,
-            param=self.owner.param_sfc,
-            grid=self.owner.grid,
-            area=self.owner.area,
-            levtype="sfc",
+        LOG.info(f"Loading surface fields from {self.WHERE}")
+        return cml.load_source(
+            "multi",
+            [
+                self.sfc_load_source(
+                    date=date,
+                    time=time,
+                    param=self.owner.param_sfc,
+                    grid=self.owner.grid,
+                    area=self.owner.area,
+                )
+                for date, time in self.owner.datetimes()
+            ],
         )
-        return cml.load_source("mars", request)
 
     @cached_property
     def fields_pl(self):
-        LOG.info("Loading pressure fields from MARS")
+        LOG.info(f"Loading pressure fields from {self.WHERE}")
         param, level = self.owner.param_level_pl
-        request = dict(
-            date=self.owner.date,
-            time=self.owner.time,
-            param=param,
-            level=level,
-            grid=self.owner.grid,
-            area=self.owner.area,
-            levtype="pl",
+        return cml.load_source(
+            "multi",
+            [
+                self.pl_load_source(
+                    date=date,
+                    time=time,
+                    param=param,
+                    level=level,
+                    grid=self.owner.grid,
+                    area=self.owner.area,
+                )
+                for date, time in self.owner.datetimes()
+            ],
         )
-        return cml.load_source("mars", request)
 
     @cached_property
     def all_fields(self):
         return self.fields_sfc + self.fields_pl
 
 
-class CdsInput:
+class MarsInput(RequestBasedInput):
+    WHERE = "MARS"
+
     def __init__(self, owner, **kwargs):
         self.owner = owner
 
-    @cached_property
-    def fields_sfc(self):
-        LOG.info("Loading surface fields from the CDS")
-        request = dict(
-            product_type="reanalysis",
-            date=self.owner.date,
-            time=self.owner.time,
-            param=self.owner.param_sfc,
-            grid=self.owner.grid,
-            area=self.owner.area,
-            levtype="sfc",
-        )
-        return cml.load_source("cds", "reanalysis-era5-single-levels", request)
+    def pl_load_source(self, **kwargs):
+        kwargs["levtype"] = "pl"
+        logging.debug("load source mars %s", kwargs)
+        return cml.load_source("mars", kwargs)
 
-    @cached_property
-    def fields_pl(self):
-        LOG.info("Loading pressure fields  from the CDS")
-        param, level = self.owner.param_level_pl
-        request = dict(
-            product_type="reanalysis",
-            date=self.owner.date,
-            time=self.owner.time,
-            param=param,
-            level=level,
-            grid=self.owner.grid,
-            area=self.owner.area,
-            levtype="pl",
-        )
-        return cml.load_source("cds", "reanalysis-era5-pressure-levels", request)
+    def sfc_load_source(self, **kwargs):
+        kwargs["levtype"] = "sfc"
+        logging.debug("load source mars %s", kwargs)
+        return cml.load_source("mars", kwargs)
 
-    @cached_property
-    def all_fields(self):
-        return self.fields_sfc + self.fields_pl
+
+class CdsInput(RequestBasedInput):
+    WHERE = "CDS"
+
+    def pl_load_source(self, **kwargs):
+        return cml.load_source("cds", "reanalysis-era5-pressure-levels", kwargs)
+
+    def sfc_load_source(self, **kwargs):
+        return cml.load_source("cds", "reanalysis-era5-single-levels", kwargs)
 
 
 class FileInput:
@@ -200,6 +197,7 @@ class Stepper:
 
 
 class Model:
+    lagged = False
     assets_extra_dir = None
 
     def __init__(self, input, output, download_assets, **kwargs):
@@ -304,6 +302,43 @@ class Model:
 
     def stepper(self, step):
         return Stepper(step, self.lead_time)
+
+    def datetimes(self):
+        date = self.date
+        assert isinstance(date, int)
+        if date <= 0:
+            date = datetime.datetime.utcnow() + datetime.timedelta(days=date)
+            date = date.year * 10000 + date.month * 100 + date.day
+
+        time = self.time
+        assert isinstance(time, int)
+        if time < 100:
+            time *= 100
+        assert time in (0, 600, 1200, 1800), time
+
+        lagged = self.lagged
+        if not lagged:
+            lagged = [0]
+
+        full = datetime.datetime(
+            date // 10000,
+            date % 10000 // 100,
+            date % 100,
+            time // 100,
+            time % 100,
+        )
+
+        result = []
+        for lag in lagged:
+            date = full + datetime.timedelta(hours=lag)
+            result.append(
+                (
+                    date.year * 10000 + date.month * 100 + date.day,
+                    date.hour,
+                ),
+            )
+
+        return result
 
     def print_fields(self):
         param, level = self.param_level_pl
