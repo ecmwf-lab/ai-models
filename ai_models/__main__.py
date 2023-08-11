@@ -214,6 +214,12 @@ def main():
         model.print_fields()
         sys.exit(0)
 
+    if args.requests_extra:
+        if not args.retrieve_requests and not args.archive_requests:
+            parser.error(
+                "You need to specify --retrieve-requests or --archive-requests"
+            )
+
     # This logic is a bit convoluted, but it is for backwards compatibility.
     if args.retrieve_requests or (args.requests_extra and not args.archive_requests):
         model.print_requests()

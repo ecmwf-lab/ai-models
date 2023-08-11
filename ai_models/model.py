@@ -266,7 +266,6 @@ class Model:
                     request.update(archive.request)
                     request.update(self._requests_extra)
                     self._print_request("archive", request, file=f)
-                    print(file=f)
 
     def download_assets(self, **kwargs):
         for file in self.download_files:
@@ -396,6 +395,7 @@ class Model:
 
         r = ",\n   ".join(r)
         print(r, file=file)
+        print(file=file)
 
     @property
     def _requests_extra(self):
@@ -406,28 +406,34 @@ class Model:
         return extra
 
     def print_requests(self):
-        param, level = self.param_level_pl
-
-        r = dict(
+        first = dict(
+            target="input.grib",
             grid=self.grid,
             area=self.area,
-            levtype="pl",
-            levelist=level,
-            param=param,
-            target="input.grib",
         )
+        for date, time in self.datetimes():  # noqa F402
+            param, level = self.param_level_pl
 
-        r.update(self._requests_extra)
+            r = dict(
+                levtype="pl",
+                levelist=level,
+                param=param,
+                date=date,
+                time=time,
+            )
+            r.update(first)
+            first = {}
 
-        self._print_request("retrieve", r)
+            r.update(self._requests_extra)
 
-        r = dict(
-            levtype="sfc",
-            param=self.param_sfc,
-        )
+            self._print_request("retrieve", r)
 
-        print()
-        self._print_request("retrieve", r)
+            r = dict(
+                levtype="sfc",
+                param=self.param_sfc,
+            )
+
+            self._print_request("retrieve", r)
 
 
 def load_model(name, **kwargs):
