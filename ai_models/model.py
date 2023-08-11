@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 import time
+from collections import defaultdict
 from functools import cached_property
 
 import climetlab as cml
@@ -127,7 +128,7 @@ class FileOutput:
         )
 
     def write(self, *args, **kwargs):
-        self.output.write(*args, **kwargs)
+        return self.output.write(*args, **kwargs)
 
 
 class NoneOutput:
@@ -196,6 +197,17 @@ class Stepper:
         LOG.info("Average: %s per step.", seconds(elapsed / self.num_steps))
 
 
+class ArchiveCollector:
+    def __init__(self) -> None:
+        self.expect = 0
+        self.request = defaultdict(set)
+
+    def add(self, field):
+        self.expect += 1
+        for k, v in field.items():
+            self.request[k].add(str(v))
+
+
 class Model:
     lagged = False
     assets_extra_dir = None
@@ -222,6 +234,8 @@ class Model:
         if download_assets:
             self.download_assets(**kwargs)
 
+        self.archiving = defaultdict(ArchiveCollector)
+
     @cached_property
     def fields_pl(self):
         return self.input.fields_pl
@@ -235,7 +249,24 @@ class Model:
         return self.input.all_fields
 
     def write(self, *args, **kwargs):
-        self.output.write(*args, **kwargs)
+        self.collect_archive_requests(
+            self.output.write(*args, **kwargs),
+        )
+
+    def collect_archive_requests(self, written):
+        if self.archive_requests:
+            handle, path = written
+            self.archiving[path].add(handle.as_mars())
+
+    def finalise(self):
+        if self.archive_requests:
+            with open(self.archive_requests, "w") as f:
+                for path, archive in self.archiving.items():
+                    request = dict(source=f'"{path}"', expect=archive.expect)
+                    request.update(archive.request)
+                    request.update(self._requests_extra)
+                    self._print_request("archive", request, file=f)
+                    print(file=f)
 
     def download_assets(self, **kwargs):
         for file in self.download_files:
@@ -354,13 +385,27 @@ class Model:
         for file in self.download_files:
             print(file)
 
-    def print_requests(self, extra):
-        def slashes(v):
-            if not isinstance(v, (list, tuple)):
+    def _print_request(self, verb, request, file=sys.stdout):
+        r = [verb]
+        for k, v in request.items():
+            if not isinstance(v, (list, tuple, set)):
                 v = [v]
             v = [str(_) for _ in v]
-            return "/".join(v)
+            v = "/".join(v)
+            r.append(f"{k}={v}")
 
+        r = ",\n   ".join(r)
+        print(r, file=file)
+
+    @property
+    def _requests_extra(self):
+        if not self.requests_extra:
+            return {}
+        extra = [_.split("=") for _ in self.requests_extra.split(",")]
+        extra = {a: b for a, b in extra}
+        return extra
+
+    def print_requests(self):
         param, level = self.param_level_pl
 
         r = dict(
@@ -372,22 +417,17 @@ class Model:
             target="input.grib",
         )
 
-        def to_str(r, extra=None):
-            r = [f"{k}={slashes(v)}" for k, v in r.items()]
-            if extra:
-                r.append(extra)
-            r = ["   " + _ for _ in r]
-            r = "retrieve,\n" + ",\n".join(r)
-            return r
+        r.update(self._requests_extra)
 
-        print(to_str(r, extra))
-        print()
+        self._print_request("retrieve", r)
 
         r = dict(
             levtype="sfc",
             param=self.param_sfc,
         )
-        print(to_str(r))
+
+        print()
+        self._print_request("retrieve", r)
 
 
 def load_model(name, **kwargs):

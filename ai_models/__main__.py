@@ -44,10 +44,18 @@ def main():
     )
 
     parser.add_argument(
+        "--archive-requests",
+        help=(
+            "Save mars archive requests to FILE."
+            "Use --requests-extra to extend or overide the requests. "
+        ),
+        metavar="FILE",
+    )
+
+    parser.add_argument(
         "--requests-extra",
         help=(
-            "Extends the retrieve requests with a list of key1=value1,key2=value."
-            " Implies --retrieve-requests."
+            "Extends the retrieve or archive requests with a list of key1=value1,key2=value."
         ),
     )
 
@@ -206,8 +214,9 @@ def main():
         model.print_fields()
         sys.exit(0)
 
-    if args.retrieve_requests or args.requests_extra:
-        model.print_requests(args.requests_extra)
+    # This logic is a bit convoluted, but it is for backwards compatibility.
+    if args.retrieve_requests or (args.requests_extra and not args.archive_requests):
+        model.print_requests()
         sys.exit(0)
 
     if args.assets_list:
@@ -228,6 +237,8 @@ def main():
             shlex.join([sys.argv[0], "--download-assets"] + sys.argv[1:]),
         )
         sys.exit(1)
+
+    model.finalise()
 
 
 if __name__ == "__main__":
