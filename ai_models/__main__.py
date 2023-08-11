@@ -92,8 +92,10 @@ def main():
     parser.add_argument(
         "--assets-sub-directory",
         help="Load assets from a subdirectory of --assets based on the name of the model.",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
     )
+
+    parser.parse_args(["--no-assets-sub-directory"])
 
     parser.add_argument(
         "--assets-list",
