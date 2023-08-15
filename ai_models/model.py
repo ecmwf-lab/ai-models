@@ -13,142 +13,15 @@ import time
 from collections import defaultdict
 from functools import cached_property
 
-import climetlab as cml
 import entrypoints
 from climetlab.utils.humanize import seconds
 from multiurl import download
 
+from .checkpoint import peek
+from .inputs import get_input
+from .outputs import get_output
+
 LOG = logging.getLogger(__name__)
-
-
-class RequestBasedInput:
-    def __init__(self, owner, **kwargs):
-        self.owner = owner
-
-    @cached_property
-    def fields_sfc(self):
-        LOG.info(f"Loading surface fields from {self.WHERE}")
-        return cml.load_source(
-            "multi",
-            [
-                self.sfc_load_source(
-                    date=date,
-                    time=time,
-                    param=self.owner.param_sfc,
-                    grid=self.owner.grid,
-                    area=self.owner.area,
-                )
-                for date, time in self.owner.datetimes()
-            ],
-        )
-
-    @cached_property
-    def fields_pl(self):
-        LOG.info(f"Loading pressure fields from {self.WHERE}")
-        param, level = self.owner.param_level_pl
-        return cml.load_source(
-            "multi",
-            [
-                self.pl_load_source(
-                    date=date,
-                    time=time,
-                    param=param,
-                    level=level,
-                    grid=self.owner.grid,
-                    area=self.owner.area,
-                )
-                for date, time in self.owner.datetimes()
-            ],
-        )
-
-    @cached_property
-    def all_fields(self):
-        return self.fields_sfc + self.fields_pl
-
-
-class MarsInput(RequestBasedInput):
-    WHERE = "MARS"
-
-    def __init__(self, owner, **kwargs):
-        self.owner = owner
-
-    def pl_load_source(self, **kwargs):
-        kwargs["levtype"] = "pl"
-        logging.debug("load source mars %s", kwargs)
-        return cml.load_source("mars", kwargs)
-
-    def sfc_load_source(self, **kwargs):
-        kwargs["levtype"] = "sfc"
-        logging.debug("load source mars %s", kwargs)
-        return cml.load_source("mars", kwargs)
-
-
-class CdsInput(RequestBasedInput):
-    WHERE = "CDS"
-
-    def pl_load_source(self, **kwargs):
-        return cml.load_source("cds", "reanalysis-era5-pressure-levels", kwargs)
-
-    def sfc_load_source(self, **kwargs):
-        return cml.load_source("cds", "reanalysis-era5-single-levels", kwargs)
-
-
-class FileInput:
-    def __init__(self, owner, file, **kwargs):
-        self.file = file
-        self.owner = owner
-
-    @cached_property
-    def fields_sfc(self):
-        return cml.load_source("file", self.file).sel(levtype="sfc")
-
-    @cached_property
-    def fields_pl(self):
-        return cml.load_source("file", self.file).sel(levtype="pl")
-
-    @cached_property
-    def all_fields(self):
-        return cml.load_source("file", self.file)
-
-
-class FileOutput:
-    def __init__(self, owner, path, metadata, **kwargs):
-        self._first = True
-        metadata.setdefault("expver", owner.expver)
-        metadata.setdefault("class", "ml")
-
-        LOG.info("Writting results to %s.", path)
-        self.path = path
-        self.owner = owner
-        self.output = cml.new_grib_output(
-            path,
-            split_output=True,
-            edition=2,
-            **metadata,
-        )
-
-    def write(self, *args, **kwargs):
-        return self.output.write(*args, **kwargs)
-
-
-class NoneOutput:
-    def __init__(self, *args, **kwargs):
-        LOG.info("Results will not be written.")
-
-    def write(self, *args, **kwargs):
-        pass
-
-
-INPUTS = dict(
-    mars=MarsInput,
-    file=FileInput,
-    cds=CdsInput,
-)
-
-OUTPUTS = dict(
-    file=FileOutput,
-    none=NoneOutput,
-)
 
 
 class Timer:
@@ -213,8 +86,8 @@ class Model:
     assets_extra_dir = None
 
     def __init__(self, input, output, download_assets, **kwargs):
-        self.input = INPUTS[input](self, **kwargs)
-        self.output = OUTPUTS[output](self, **kwargs)
+        self.input = get_input(input, self, **kwargs)
+        self.output = get_output(output, self, **kwargs)
 
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -435,6 +308,9 @@ class Model:
 
             self._print_request("retrieve", r)
 
+    def peek_into_checkpoint(self, path):
+        return peek(path)
+
 
 def load_model(name, **kwargs):
     return available_models()[name].load()(**kwargs)
@@ -445,11 +321,3 @@ def available_models():
     for e in entrypoints.get_group_all("ai_models.model"):
         result[e.name] = e
     return result
-
-
-def available_inputs():
-    return sorted(INPUTS.keys())
-
-
-def available_outputs():
-    return sorted(OUTPUTS.keys())
