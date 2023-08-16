@@ -52,6 +52,7 @@ class ArchiveCollector:
 class Model:
     lagged = False
     assets_extra_dir = None
+    retrieve = {}  # Extra parameters for retrieve
 
     def __init__(self, input, output, download_assets, **kwargs):
         self.input = get_input(input, self, **kwargs)
@@ -252,6 +253,8 @@ class Model:
             grid=self.grid,
             area=self.area,
         )
+        first.update(self.retrieve)
+
         for date, time in self.datetimes():  # noqa F402
             param, level = self.param_level_pl
 

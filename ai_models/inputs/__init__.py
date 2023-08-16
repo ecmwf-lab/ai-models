@@ -29,6 +29,7 @@ class RequestBasedInput:
                     param=self.owner.param_sfc,
                     grid=self.owner.grid,
                     area=self.owner.area,
+                    **self.owner.retrieve,
                 )
                 for date, time in self.owner.datetimes()
             ],
