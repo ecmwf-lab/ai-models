@@ -11,7 +11,9 @@ import os
 import shlex
 import sys
 
-from .model import available_inputs, available_models, available_outputs, load_model
+from .model import available_models, load_model
+from .inputs import available_inputs
+from .outputs import available_outputs
 
 LOG = logging.getLogger(__name__)
 
