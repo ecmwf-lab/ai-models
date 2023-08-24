@@ -280,9 +280,11 @@ class Model:
 
             self._print_request("retrieve", r)
 
-            r = dict(
-                levtype="sfc",
-                param=self.param_sfc,
+            r.update(
+                dict(
+                    levtype="sfc",
+                    param=self.param_sfc,
+                )
             )
 
             self.patch_retrieve_request(r)
