@@ -53,6 +53,7 @@ class Model:
     lagged = False
     assets_extra_dir = None
     retrieve = {}  # Extra parameters for retrieve
+    use_scda = False  # Use SCDA for retrieving data for 06Z and 18Z
 
     def __init__(self, input, output, download_assets, **kwargs):
         self.input = get_input(input, self, **kwargs)
@@ -77,6 +78,7 @@ class Model:
             self.download_assets(**kwargs)
 
         self.archiving = defaultdict(ArchiveCollector)
+        self.created = time.time()
 
     @cached_property
     def fields_pl(self):
@@ -173,6 +175,10 @@ class Model:
         return Timer(title)
 
     def stepper(self, step):
+        # We assume that we call this method only once
+        # just before the first iteration.
+        elapsed = time.time() - self.created
+        LOG.info("Model initialisation: %s", seconds(elapsed))
         return Stepper(step, self.lead_time)
 
     def datetimes(self):
@@ -270,6 +276,8 @@ class Model:
 
             r.update(self._requests_extra)
 
+            self.patch_retrieve_request(r)
+
             self._print_request("retrieve", r)
 
             r = dict(
@@ -277,7 +285,12 @@ class Model:
                 param=self.param_sfc,
             )
 
+            self.patch_retrieve_request(r)
             self._print_request("retrieve", r)
+
+    def patch_retrieve_request(self, request):
+        # Overriden in subclasses if needed
+        pass
 
     def peek_into_checkpoint(self, path):
         return peek(path)

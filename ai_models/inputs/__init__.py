@@ -20,16 +20,24 @@ class RequestBasedInput:
     @cached_property
     def fields_sfc(self):
         LOG.info(f"Loading surface fields from {self.WHERE}")
+
+        def patch(**kargs):
+            r = dict(**kargs)
+            self.owner.patch_retrieve_request(r)
+            return r
+
         return cml.load_source(
             "multi",
             [
                 self.sfc_load_source(
-                    date=date,
-                    time=time,
-                    param=self.owner.param_sfc,
-                    grid=self.owner.grid,
-                    area=self.owner.area,
-                    **self.owner.retrieve,
+                    **patch(
+                        date=date,
+                        time=time,
+                        param=self.owner.param_sfc,
+                        grid=self.owner.grid,
+                        area=self.owner.area,
+                        **self.owner.retrieve,
+                    )
                 )
                 for date, time in self.owner.datetimes()
             ],
