@@ -177,6 +177,13 @@ def main():
             help="The model to run",
         )
 
+        parser.add_argument(
+            "model_args",
+            metavar="MODEL_ARGS",
+            nargs=argparse.REMAINDER,
+            help="Arguments to pass to the model",
+        )
+
     args = parser.parse_args()
 
     if args.models:

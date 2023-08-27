@@ -53,7 +53,6 @@ class Model:
     lagged = False
     assets_extra_dir = None
     retrieve = {}  # Extra parameters for retrieve
-    use_scda = False  # Use SCDA for retrieving data for 06Z and 18Z
 
     def __init__(self, input, output, download_assets, **kwargs):
         self.input = get_input(input, self, **kwargs)
@@ -61,6 +60,9 @@ class Model:
 
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+        if self.model_args:
+            self.parse_model_args(self.model_args)
 
         if self.assets_sub_directory:
             if self.assets_extra_dir is not None:
@@ -296,6 +298,9 @@ class Model:
 
     def peek_into_checkpoint(self, path):
         return peek(path)
+
+    def parse_model_args(self, args):
+        raise NotImplementedError(f"This model does not accept arguments {args}")
 
 
 def load_model(name, **kwargs):
