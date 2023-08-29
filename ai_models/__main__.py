@@ -62,6 +62,12 @@ def main():
     )
 
     parser.add_argument(
+        "--json",
+        action="store_true",
+        help=("Dump the requests in JSON format."),
+    )
+
+    parser.add_argument(
         "--input",
         default="mars",
         help="Source to use",

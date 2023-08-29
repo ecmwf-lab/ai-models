@@ -6,6 +6,7 @@
 # nor does it submit to any jurisdiction.
 
 import datetime
+import json
 import logging
 import os
 import sys
@@ -258,6 +259,18 @@ class Model:
         return extra
 
     def print_requests(self):
+        requests = self._requests()
+
+        if self.json:
+            print(json.dumps(requests, indent=4))
+            return
+
+        for r in requests:
+            self._print_request("retrieve", r)
+
+    def _requests(self):
+        result = []
+
         first = dict(
             target="input.grib",
             grid=self.grid,
@@ -282,7 +295,7 @@ class Model:
 
             self.patch_retrieve_request(r)
 
-            self._print_request("retrieve", r)
+            result.append(dict(**r))
 
             r.update(
                 dict(
@@ -292,7 +305,9 @@ class Model:
             )
 
             self.patch_retrieve_request(r)
-            self._print_request("retrieve", r)
+            result.append(dict(**r))
+
+        return result
 
     def patch_retrieve_request(self, request):
         # Overriden in subclasses if needed
