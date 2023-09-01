@@ -303,6 +303,7 @@ class Model:
                     param=self.param_sfc,
                 )
             )
+            r.pop("levelist", None)
 
             self.patch_retrieve_request(r)
             result.append(dict(**r))
