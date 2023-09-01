@@ -318,7 +318,8 @@ class Model:
         return peek(path)
 
     def parse_model_args(self, args):
-        raise NotImplementedError(f"This model does not accept arguments {args}")
+        if args:
+            raise NotImplementedError(f"This model does not accept arguments {args}")
 
 
 def load_model(name, **kwargs):
