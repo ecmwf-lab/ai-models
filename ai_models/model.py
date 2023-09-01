@@ -64,8 +64,9 @@ class Model:
 
         # We need to call it to initialise the default args
         args = self.parse_model_args(self.model_args)
-        for k, v in vars(args).items():
-            setattr(self, k, v)
+        if args:
+            for k, v in vars(args).items():
+                setattr(self, k, v)
 
         if self.assets_sub_directory:
             if self.assets_extra_dir is not None:
