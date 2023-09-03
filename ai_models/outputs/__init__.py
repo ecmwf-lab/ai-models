@@ -18,7 +18,7 @@ class FileOutput:
         metadata.setdefault("expver", owner.expver)
         metadata.setdefault("class", "ml")
 
-        LOG.info("Writting results to %s.", path)
+        LOG.info("Writing results to %s.", path)
         self.path = path
         self.owner = owner
         self.output = cml.new_grib_output(

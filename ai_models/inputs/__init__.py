@@ -114,34 +114,6 @@ class FileInput:
         return cml.load_source("file", self.file)
 
 
-class FileOutput:
-    def __init__(self, owner, path, metadata, **kwargs):
-        self._first = True
-        metadata.setdefault("expver", owner.expver)
-        metadata.setdefault("class", "ml")
-
-        LOG.info("Writting results to %s.", path)
-        self.path = path
-        self.owner = owner
-        self.output = cml.new_grib_output(
-            path,
-            split_output=True,
-            edition=2,
-            **metadata,
-        )
-
-    def write(self, *args, **kwargs):
-        return self.output.write(*args, **kwargs)
-
-
-class NoneOutput:
-    def __init__(self, *args, **kwargs):
-        LOG.info("Results will not be written.")
-
-    def write(self, *args, **kwargs):
-        pass
-
-
 INPUTS = dict(
     mars=MarsInput,
     file=FileInput,
