@@ -199,7 +199,7 @@ def main():
     if args.file is not None:
         args.input = "file"
 
-    if not args.fields and not args.retrieve_requests and not args.requests_extra:
+    if not args.fields and not args.retrieve_requests:
         logging.basicConfig(
             level="DEBUG" if args.debug else "INFO",
             format="%(asctime)s %(levelname)s %(message)s",
