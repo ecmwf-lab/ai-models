@@ -5,11 +5,57 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import datetime
+import json
+import os
 import sys
 import sysconfig
 
 
-def version(versions, name, module, roots, namespaces):
+def lookup_git_repo(path):
+    from git import InvalidGitRepositoryError, Repo
+
+    while path != "/":
+        try:
+            return Repo(path)
+        except InvalidGitRepositoryError:
+            path = os.path.dirname(path)
+
+    return None
+
+
+def check_for_git(paths):
+    versions = {}
+    for name, path in paths:
+        repo = lookup_git_repo(path)
+        if repo is None:
+            continue
+
+        versions[name] = dict(
+            path=path,
+            git=dict(
+                sha1=repo.head.commit.hexsha,
+                remotes=[r.url for r in repo.remotes],
+                modified_files=sorted([item.a_path for item in repo.index.diff(None)]),
+                untracked_files=sorted(repo.untracked_files),
+            ),
+        )
+
+    return versions
+
+
+def version(versions, name, module, roots, namespaces, paths):
+    path = None
+
+    if hasattr(module, "__file__"):
+        path = module.__file__
+        if path is not None:
+            for k, v in roots.items():
+                path = path.replace(k, f"<{v}>")
+
+            if path.startswith("/"):
+                paths.add((name, path))
+
     try:
         versions[name] = module.__version__
         return
@@ -17,14 +63,9 @@ def version(versions, name, module, roots, namespaces):
         pass
 
     try:
-        path = module.__file__
-
         if path is None:
             namespaces.add(name)
             return
-
-        for k, v in roots.items():
-            path = path.replace(k, f"<{v}>")
 
         # For now, don't report on stdlib modules
         if path.startswith("<stdlib>"):
@@ -55,19 +96,23 @@ def module_versions():
         for path, name in sorted(roots.items(), key=lambda x: len(x[0]), reverse=True)
     }
 
+    paths = set()
+
     versions = {}
     namespaces = set()
     for k, v in sorted(sys.modules.items()):
         if "." not in k:
-            version(versions, k, v, roots, namespaces)
+            version(versions, k, v, roots, namespaces, paths)
 
     # Catter for modules like "earthkit.meteo"
     for k, v in sorted(sys.modules.items()):
         bits = k.split(".")
         if len(bits) == 2 and bits[0] in namespaces:
-            version(versions, k, v, roots, namespaces)
+            version(versions, k, v, roots, namespaces, paths)
 
-    return versions
+    git_versions = check_for_git(paths)
+
+    return versions, git_versions
 
 
 def platform_info():
@@ -82,13 +127,27 @@ def platform_info():
     )
 
 
+def gpu_info():
+    import nvsmi
+
+    if not nvsmi.is_nvidia_smi_on_path():
+        return "nvdia-smi not found"
+
+    return [json.loads(gpu.to_json()) for gpu in nvsmi.get_gpus()]
+
+
 def gather_provenance_info():
     executable = sys.executable
 
+    versions, git_versions = module_versions()
+
     return dict(
+        time=datetime.datetime.utcnow().isoformat(),
         executable=executable,
         python_path=sys.path,
         config_paths=sysconfig.get_paths(),
-        modules=module_versions(),
+        module_versions=versions,
+        git_versions=git_versions,
         platform=platform_info(),
+        gpus=gpu_info(),
     )

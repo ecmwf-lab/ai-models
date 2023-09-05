@@ -48,6 +48,12 @@ setuptools.setup(
         "ecmwflibs>=0.5.3",
         "gputil",
     ],
+    extras_require={
+        "provenance": [
+            "nvsmi",
+            "GitPython",
+        ]
+    },
     zip_safe=True,
     keywords="tool",
     entry_points={
