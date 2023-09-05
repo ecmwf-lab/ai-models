@@ -136,7 +136,39 @@ def gpu_info():
     return [json.loads(gpu.to_json()) for gpu in nvsmi.get_gpus()]
 
 
-def gather_provenance_info():
+def path_md5(path):
+    import hashlib
+
+    hash = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            hash.update(chunk)
+    return hash.hexdigest()
+
+
+def assets_info(paths):
+    result = {}
+
+    for path in paths:
+        try:
+            (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(path)
+            md5 = path_md5(path)
+        except Exception as e:
+            result[path] = str(e)
+            continue
+
+        result[path] = dict(
+            size=size,
+            atime=datetime.datetime.fromtimestamp(atime).isoformat(),
+            mtime=datetime.datetime.fromtimestamp(mtime).isoformat(),
+            ctime=datetime.datetime.fromtimestamp(ctime).isoformat(),
+            md5=md5,
+        )
+
+    return result
+
+
+def gather_provenance_info(assets):
     executable = sys.executable
 
     versions, git_versions = module_versions()
@@ -150,4 +182,5 @@ def gather_provenance_info():
         git_versions=git_versions,
         platform=platform_info(),
         gpus=gpu_info(),
+        assets=assets_info(assets),
     )

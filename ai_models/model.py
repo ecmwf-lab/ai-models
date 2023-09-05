@@ -126,6 +126,13 @@ class Model:
                 download(self.download_url.format(file=file), asset + ".download")
                 os.rename(asset + ".download", asset)
 
+    @property
+    def asset_files(self, **kwargs):
+        result = []
+        for file in self.download_files:
+            result.append(os.path.realpath(os.path.join(self.assets, file)))
+        return result
+
     @cached_property
     def device(self):
         import torch
@@ -325,8 +332,7 @@ class Model:
     def provenance(self):
         from .provenance import gather_provenance_info
 
-        return gather_provenance_info()
-        return {}
+        return gather_provenance_info(self.asset_files)
 
 
 def load_model(name, **kwargs):
