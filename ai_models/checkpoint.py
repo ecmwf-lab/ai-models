@@ -5,6 +5,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import os
 import pickle
 import zipfile
 from typing import Any
@@ -47,6 +48,15 @@ def tidy(x):
 
 def peek(path):
     with zipfile.ZipFile(path, "r") as f:
-        unpickler = UnpicklerWrapper(f.open("archive/data.pkl", "r"))
+        data_pkl = None
+        for b in f.namelist():
+            if os.path.basename(b) == "data.pkl":
+                if data_pkl is not None:
+                    raise Exception(
+                        f"Found two data.pkl files in {path}: {data_pkl} and {b}"
+                    )
+                data_pkl = b
+
+        unpickler = UnpicklerWrapper(f.open(data_pkl, "r"))
         x = tidy(unpickler.load())
         return tidy(x)

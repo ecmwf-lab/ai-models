@@ -175,6 +175,13 @@ def assets_info(paths):
             md5=md5,
         )
 
+        try:
+            from .checkpoint import peek
+
+            result[path]["peek"] = peek(path)
+        except Exception:
+            pass
+
     return result
 
 

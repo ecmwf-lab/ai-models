@@ -172,3 +172,4 @@ bar
 *.grib
 *.nc
 *.npz
+*.json
