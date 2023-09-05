@@ -322,6 +322,12 @@ class Model:
         if args:
             raise NotImplementedError(f"This model does not accept arguments {args}")
 
+    def provenance(self):
+        from .provenance import gather_provenance_info
+
+        return gather_provenance_info()
+        return {}
+
 
 def load_model(name, **kwargs):
     return available_models()[name].load()(**kwargs)

@@ -68,6 +68,12 @@ def main():
     )
 
     parser.add_argument(
+        "--dump-provenance",
+        metavar="FILE",
+        help=("Dump information for tracking provenance."),
+    )
+
+    parser.add_argument(
         "--input",
         default="mars",
         help="Source to use",
@@ -253,6 +259,13 @@ def main():
         sys.exit(1)
 
     model.finalise()
+
+    if args.dump_provenance:
+        with open(args.dump_provenance, "w") as f:
+            prov = model.provenance()
+            import json  # import here so it is not listed in provenance
+
+            json.dump(prov, f, indent=4)
 
 
 if __name__ == "__main__":
