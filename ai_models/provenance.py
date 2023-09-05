@@ -118,13 +118,23 @@ def module_versions():
 def platform_info():
     import platform
 
-    return dict(
-        system=platform.system(),
-        release=platform.release(),
-        version=platform.version(),
-        machine=platform.machine(),
-        processor=platform.processor(),
-    )
+    r = {}
+    for p in dir(platform):
+        if p.startswith("_"):
+            continue
+        try:
+            r[p] = getattr(platform, p)()
+        except Exception:
+            pass
+
+    def all_empty(x):
+        return all(all_empty(v) if isinstance(v, (list, tuple)) else v == "" for v in x)
+
+    for k, v in list(r.items()):
+        if isinstance(v, (list, tuple)) and all_empty(v):
+            del r[k]
+
+    return r
 
 
 def gpu_info():
@@ -176,6 +186,7 @@ def gather_provenance_info(assets):
     return dict(
         time=datetime.datetime.utcnow().isoformat(),
         executable=executable,
+        args=sys.argv,
         python_path=sys.path,
         config_paths=sysconfig.get_paths(),
         module_versions=versions,
