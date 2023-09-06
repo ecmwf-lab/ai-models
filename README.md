@@ -20,7 +20,7 @@ pip install ai-models
 
 ## Available Models
 
-Currently, two models can be installed:
+Currently, four models can be installed:
 
 ```bash
 pip install ai-models-panguweather
