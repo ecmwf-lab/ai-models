@@ -20,15 +20,17 @@ pip install ai-models
 
 ## Available Models
 
-Currently, two models can be installed:
+Currently, four models can be installed:
 
 ```bash
 pip install ai-models-panguweather
 pip install ai-models-fourcastnet
+pip install ai-models-graphcast  # Install details at https://github.com/ecmwf-lab/ai-models-graphcast
+pip install ai-models-fourcastnetv2
 ```
 
-See [ai-models-panguweather](https://github.com/ecmwf-lab/ai-models-panguweather) and [ai-models-fourcastnet](https://github.com/ecmwf-lab/ai-models-fourcastnet).
- for more details about these models.
+See [ai-models-panguweather](https://github.com/ecmwf-lab/ai-models-panguweather), [ai-models-fourcastnet](https://github.com/ecmwf-lab/ai-models-fourcastnet),
+ [ai-models-fourcastnetv2](https://github.com/ecmwf-lab/ai-models-fourcastnetv2) and [ai-models-graphcast](https://github.com/ecmwf-lab/ai-models-graphcast) for more details about these models.
 
 ## Running the models
 
