@@ -90,9 +90,11 @@ class CdsInput(RequestBasedInput):
     WHERE = "CDS"
 
     def pl_load_source(self, **kwargs):
+        kwargs["product_type"] = "reanalysis"
         return cml.load_source("cds", "reanalysis-era5-pressure-levels", kwargs)
 
     def sfc_load_source(self, **kwargs):
+        kwargs["product_type"] = "reanalysis"
         return cml.load_source("cds", "reanalysis-era5-single-levels", kwargs)
 
 
