@@ -6,7 +6,7 @@ The `ai-models` command is used to run AI-based weather forecasting models. Thes
 
 Before using the `ai-models` command, ensure you have the following prerequisites:
 
-- Python 3.10 (it may work with different versions, but it has not been tested with 3.10).
+- Python 3.10 (it may work with different versions, but it has been tested with 3.10).
 - An ECMWF and/or CDS account for accessing input data (see below for more details).
 - A computed with a GPU for optimal performance (strongly recommended).
 
