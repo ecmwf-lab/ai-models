@@ -4,7 +4,7 @@ The `ai-models` command is used to run AI-based weather forecasting models. Thes
 
 ## Usage
 
-Although the source code `ai-models` and its plugins are available under open sources licences, some model weights maybe available under a different licence. For example some models make their weights available under the CC-BY-NC-SA 4.0 license, which does not allow commercial use. For more information, please the license associated to each model on their main home page, that we link from each of the corresponding plugins.
+Although the source code `ai-models` and its plugins are available under open sources licences, some model weights may be available under a different licence. For example some models make their weights available under the CC-BY-NC-SA 4.0 license, which does not allow commercial use. For more informations, please check the license associated with each model on their main home page, that we link from each of the corresponding plugins.
 
 ## Prerequisites
 
