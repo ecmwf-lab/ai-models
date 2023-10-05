@@ -107,6 +107,11 @@ class Model:
     def collect_archive_requests(self, written):
         if self.archive_requests:
             handle, path = written
+            if self.hindcast_reference_date:
+                # The clone is necessary because the handle
+                # does not return always return recently set keys
+                handle = handle.clone()
+
             self.archiving[path].add(handle.as_mars())
 
     def finalise(self):
