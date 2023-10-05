@@ -25,10 +25,27 @@ class FileOutput:
             path,
             split_output=True,
             edition=2,
+            generatingProcessIdentifier=self.owner.version,
             **metadata,
         )
 
     def write(self, *args, **kwargs):
+        return self.output.write(*args, **kwargs)
+
+
+class HindcastReLabel:
+    def __init__(self, owner, output):
+        self.owner = owner
+        self.output = output
+
+    def write(self, *args, **kwargs):
+        if "date" in kwargs:
+            date = kwargs["date"]
+        else:
+            date = kwargs["template"]["date"]
+
+        kwargs["date"] = self.owner.hindcast_reference_date
+        kwargs["hdate"] = date
         return self.output.write(*args, **kwargs)
 
 
@@ -46,8 +63,11 @@ OUTPUTS = dict(
 )
 
 
-def get_output(name, *args, **kwargs):
-    return OUTPUTS[name](*args, **kwargs)
+def get_output(name, owner, *args, **kwargs):
+    result = OUTPUTS[name](owner, *args, **kwargs)
+    if owner.hindcast_reference_date is not None:
+        result = HindcastReLabel(owner, result)
+    return result
 
 
 def available_outputs():

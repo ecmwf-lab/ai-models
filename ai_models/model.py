@@ -54,14 +54,14 @@ class Model:
     lagged = False
     assets_extra_dir = None
     retrieve = {}  # Extra parameters for retrieve
-    version = 1
+    version = 1  # To be overriden in subclasses
 
     def __init__(self, input, output, download_assets, **kwargs):
-        self.input = get_input(input, self, **kwargs)
-        self.output = get_output(output, self, **kwargs)
-
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+        self.input = get_input(input, self, **kwargs)
+        self.output = get_output(output, self, **kwargs)
 
         # We need to call it to initialise the default args
         args = self.parse_model_args(self.model_args)
