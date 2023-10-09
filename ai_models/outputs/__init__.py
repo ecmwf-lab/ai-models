@@ -21,14 +21,35 @@ class FileOutput:
         LOG.info("Writing results to %s.", path)
         self.path = path
         self.owner = owner
+
+        edition = metadata.pop("edition", 2)
+
         self.output = cml.new_grib_output(
             path,
             split_output=True,
-            edition=2,
+            edition=edition,
+            generatingProcessIdentifier=self.owner.version,
             **metadata,
         )
 
     def write(self, *args, **kwargs):
+        return self.output.write(*args, **kwargs)
+
+
+class HindcastReLabel:
+    def __init__(self, owner, output):
+        self.owner = owner
+        self.output = output
+
+    def write(self, *args, **kwargs):
+        if "date" in kwargs:
+            date = kwargs["date"]
+        else:
+            date = kwargs["template"]["date"]
+
+        kwargs.pop("date", None)
+        kwargs["referenceDate"] = self.owner.hindcast_reference_date
+        kwargs["hdate"] = date
         return self.output.write(*args, **kwargs)
 
 
@@ -46,8 +67,11 @@ OUTPUTS = dict(
 )
 
 
-def get_output(name, *args, **kwargs):
-    return OUTPUTS[name](*args, **kwargs)
+def get_output(name, owner, *args, **kwargs):
+    result = OUTPUTS[name](owner, *args, **kwargs)
+    if owner.hindcast_reference_date is not None:
+        result = HindcastReLabel(owner, result)
+    return result
 
 
 def available_outputs():
