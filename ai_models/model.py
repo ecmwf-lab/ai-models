@@ -107,7 +107,7 @@ class Model:
     def collect_archive_requests(self, written):
         if self.archive_requests:
             handle, path = written
-            if self.hindcast_reference_date:
+            if self.hindcast_reference_year:
                 # The clone is necessary because the handle
                 # does not return always return recently set keys
                 handle = handle.clone()
