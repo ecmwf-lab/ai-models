@@ -47,8 +47,12 @@ class HindcastReLabel:
         else:
             date = kwargs["template"]["date"]
 
+        assert len(str(date)) == 8
+        date = int(date)
+        referenceDate = self.owner.hindcast_reference_year * 10000 + date % 10000
+
         kwargs.pop("date", None)
-        kwargs["referenceDate"] = self.owner.hindcast_reference_date
+        kwargs["referenceDate"] = referenceDate
         kwargs["hdate"] = date
         return self.output.write(*args, **kwargs)
 
@@ -69,7 +73,7 @@ OUTPUTS = dict(
 
 def get_output(name, owner, *args, **kwargs):
     result = OUTPUTS[name](owner, *args, **kwargs)
-    if owner.hindcast_reference_date is not None:
+    if owner.hindcast_reference_year is not None:
         result = HindcastReLabel(owner, result)
     return result
 

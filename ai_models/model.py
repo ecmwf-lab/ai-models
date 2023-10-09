@@ -231,6 +231,14 @@ class Model:
         return result
 
     def datetimes(self):
+        if self.staging_dates:
+            dates = []
+            with open(self.staging_dates) as f:
+                for line in f:
+                    dates.append(datetime.datetime.fromisoformat(line.strip()))
+
+            return self._datetimes(dates)
+
         date = self.date
         assert isinstance(date, int)
         if date <= 0:
