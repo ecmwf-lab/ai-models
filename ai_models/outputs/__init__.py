@@ -40,6 +40,7 @@ class HindcastReLabel:
     def __init__(self, owner, output):
         self.owner = owner
         self.output = output
+        self.hindcast_reference_year = int(owner.hindcast_reference_year)
 
     def write(self, *args, **kwargs):
         if "date" in kwargs:
@@ -49,7 +50,7 @@ class HindcastReLabel:
 
         assert len(str(date)) == 8
         date = int(date)
-        referenceDate = self.owner.hindcast_reference_year * 10000 + date % 10000
+        referenceDate = self.hindcast_reference_year * 10000 + date % 10000
 
         kwargs.pop("date", None)
         kwargs["referenceDate"] = referenceDate
