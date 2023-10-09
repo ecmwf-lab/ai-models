@@ -195,7 +195,7 @@ class Model:
         LOG.info("Model initialisation: %s", seconds(elapsed))
         return Stepper(step, self.lead_time)
 
-    def datetimes(self):
+    def _datetimes(self, dates):
         date = self.date
         assert isinstance(date, int)
         if date <= 0:
@@ -212,6 +212,33 @@ class Model:
         if not lagged:
             lagged = [0]
 
+        result = []
+        for basedate in dates:
+            for lag in lagged:
+                date = basedate + datetime.timedelta(hours=lag)
+                result.append(
+                    (
+                        date.year * 10000 + date.month * 100 + date.day,
+                        date.hour,
+                    ),
+                )
+
+        return result
+
+    def datetimes(self):
+        date = self.date
+        assert isinstance(date, int)
+        if date <= 0:
+            date = datetime.datetime.utcnow() + datetime.timedelta(days=date)
+            date = date.year * 10000 + date.month * 100 + date.day
+
+        time = self.time
+        assert isinstance(time, int)
+        if time < 100:
+            time *= 100
+
+        assert time in (0, 600, 1200, 1800), time
+
         full = datetime.datetime(
             date // 10000,
             date % 10000 // 100,
@@ -219,18 +246,7 @@ class Model:
             time // 100,
             time % 100,
         )
-
-        result = []
-        for lag in lagged:
-            date = full + datetime.timedelta(hours=lag)
-            result.append(
-                (
-                    date.year * 10000 + date.month * 100 + date.day,
-                    date.hour,
-                ),
-            )
-
-        return result
+        return self._datetimes([full])
 
     def print_fields(self):
         param, level = self.param_level_pl
