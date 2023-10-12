@@ -37,10 +37,10 @@ class FileOutput:
 
 
 class HindcastReLabel:
-    def __init__(self, owner, output):
+    def __init__(self, owner, output, hindcast_reference_year):
         self.owner = owner
         self.output = output
-        self.hindcast_reference_year = int(owner.hindcast_reference_year)
+        self.hindcast_reference_year = int(hindcast_reference_year)
 
     def write(self, *args, **kwargs):
         if "date" in kwargs:
@@ -74,8 +74,8 @@ OUTPUTS = dict(
 
 def get_output(name, owner, *args, **kwargs):
     result = OUTPUTS[name](owner, *args, **kwargs)
-    if owner.hindcast_reference_year is not None:
-        result = HindcastReLabel(owner, result)
+    if kwargs.get("hindcast_reference_year") is not None:
+        result = HindcastReLabel(owner, result, **kwargs)
     return result
 
 
