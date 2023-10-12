@@ -185,6 +185,12 @@ def _main():
         help="For encoding hincast-like outputs",
     )
 
+    parser.add_argument(
+        "--only-gpu",
+        help="Fail if GPU is not available",
+        action="store_true",
+    )
+
     # TODO: deprecate that option
     parser.add_argument(
         "--model-version",

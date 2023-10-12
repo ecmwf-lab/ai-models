@@ -156,6 +156,10 @@ class Model:
             device.upper(),
         )
 
+        if self.only_gpu:
+            if device == "cpu":
+                raise RuntimeError("GPU is not available")
+
         return device
 
     @cached_property
@@ -167,10 +171,13 @@ class Model:
 
         providers = []
 
-        if GPUtil.getAvailable():
-            providers += [
-                "CUDAExecutionProvider",  # CUDA
-            ]
+        try:
+            if GPUtil.getAvailable():
+                providers += [
+                    "CUDAExecutionProvider",  # CUDA
+                ]
+        except Exception:
+            pass
 
         if sys.platform == "darwin":
             if platform.machine() == "arm64":
@@ -188,6 +195,12 @@ class Model:
             "Using device '%s'. The speed of inference depends greatly on the device.",
             ort.get_device(),
         )
+
+        if self.only_gpu:
+            assert isinstance(ort.get_device(), str)
+            if ort.get_device() == "CPU":
+                raise RuntimeError("GPU is not available")
+
         return providers
 
     def timer(self, title):
