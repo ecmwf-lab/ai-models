@@ -40,6 +40,8 @@ class Timer:
 
 
 class ArchiveCollector:
+    UNIQUE = {"date", "hdate", "time", "referenceDate", "type", "stream", "expver"}
+
     def __init__(self) -> None:
         self.expect = 0
         self.request = defaultdict(set)
@@ -48,6 +50,11 @@ class ArchiveCollector:
         self.expect += 1
         for k, v in field.items():
             self.request[k].add(str(v))
+            if k in self.UNIQUE:
+                if len(self.request[k]) > 1:
+                    raise ValueError(
+                        f"Field {field} has different values for {k}: {self.request[k]}"
+                    )
 
 
 class Model:
@@ -55,6 +62,11 @@ class Model:
     assets_extra_dir = None
     retrieve = {}  # Extra parameters for retrieve
     version = 1  # To be overriden in subclasses
+
+    param_level_ml = ([], [])  # param, level
+    param_level_pl = ([], [])  # param, level
+    param_sfc = []  # param
+    param_sfc_fc = ([], [])  # param, step
 
     def __init__(self, input, output, download_assets, **kwargs):
         self.input = get_input(input, self, **kwargs)
@@ -90,6 +102,10 @@ class Model:
     @cached_property
     def fields_pl(self):
         return self.input.fields_pl
+
+    @cached_property
+    def fields_ml(self):
+        return self.input.fields_ml
 
     @cached_property
     def fields_sfc(self):
@@ -243,8 +259,9 @@ class Model:
 
         return result
 
-    def datetimes(self):
+    def datetimes(self, step=0):
         if self.staging_dates:
+            assert step == 0, step
             dates = []
             with open(self.staging_dates) as f:
                 for line in f:
@@ -271,7 +288,7 @@ class Model:
             date % 100,
             time // 100,
             time % 100,
-        )
+        ) + datetime.timedelta(hours=step)
         return self._datetimes([full])
 
     def print_fields(self):

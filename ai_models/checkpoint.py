@@ -43,7 +43,7 @@ def tidy(x):
     if isinstance(x, (int, float, str, bool)):
         return x
 
-    return str(type(x))
+    return x
 
 
 def peek(path):
