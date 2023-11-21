@@ -47,34 +47,6 @@ class RequestBasedInput:
         )
 
     @cached_property
-    def fields_sfc_fc(self):
-        param, step = self.owner.param_sfc_fc
-        if not (param and step):
-            return cml.load_source("empty")
-
-        LOG.info(f"Loading FC surface fields from {self.WHERE}")
-        assert len(step) == 1, step  # For now, we only support one step
-
-        return cml.load_source(
-            "multi",
-            [
-                self.sfc_load_source(
-                    **self._patch(
-                        type="fc",
-                        date=date,
-                        time=time,
-                        param=param,
-                        step=step,
-                        grid=self.owner.grid,
-                        area=self.owner.area,
-                        **self.owner.retrieve,
-                    )
-                )
-                for date, time in self.owner.datetimes()
-            ],
-        )
-
-    @cached_property
     def fields_pl(self):
         param, level = self.owner.param_level_pl
         if not (param and level):
@@ -128,15 +100,14 @@ class RequestBasedInput:
             "all_fields",
             "sfc",
             len(self.fields_sfc),
-            "sfc_fc",
-            len(self.fields_sfc_fc),
             "pl",
             len(self.fields_pl),
             "ml",
             len(self.fields_ml),
-            'total', len(self.fields_sfc) + len(self.fields_sfc_fc) + len(self.fields_pl) + len(self.fields_ml)
+            "total",
+            len(self.fields_sfc) + len(self.fields_pl) + len(self.fields_ml),
         )
-        return self.fields_sfc + self.fields_sfc_fc + self.fields_pl + self.fields_ml
+        return self.fields_sfc + self.fields_pl + self.fields_ml
 
 
 class MarsInput(RequestBasedInput):

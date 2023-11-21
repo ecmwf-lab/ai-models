@@ -14,7 +14,9 @@ import time
 from collections import defaultdict
 from functools import cached_property
 
+import climetlab as cml
 import entrypoints
+import numpy as np
 from climetlab.utils.humanize import seconds
 from multiurl import download
 
@@ -66,7 +68,6 @@ class Model:
     param_level_ml = ([], [])  # param, level
     param_level_pl = ([], [])  # param, level
     param_sfc = []  # param
-    param_sfc_fc = ([], [])  # param, step
 
     def __init__(self, input, output, download_assets, **kwargs):
         self.input = get_input(input, self, **kwargs)
@@ -393,6 +394,24 @@ class Model:
         from .provenance import gather_provenance_info
 
         return gather_provenance_info(self.asset_files)
+
+    def forcing_and_constants(self, date, param):
+        ds = cml.load_source(
+            "constants",
+            self.all_fields,
+            date=date,
+            param=param,
+        )
+
+        return ds.to_numpy(dtype=np.float32)
+
+    @cached_property
+    def gridpoints(self):
+        return len(self.all_fields[0].grid_points()[0])
+
+    @cached_property
+    def start_datetime(self):
+        return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()
 
 
 def load_model(name, **kwargs):
