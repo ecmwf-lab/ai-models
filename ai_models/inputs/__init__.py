@@ -96,17 +96,6 @@ class RequestBasedInput:
 
     @cached_property
     def all_fields(self):
-        print(
-            "all_fields",
-            "sfc",
-            len(self.fields_sfc),
-            "pl",
-            len(self.fields_pl),
-            "ml",
-            len(self.fields_ml),
-            "total",
-            len(self.fields_sfc) + len(self.fields_pl) + len(self.fields_ml),
-        )
         return self.fields_sfc + self.fields_pl + self.fields_ml
 
 

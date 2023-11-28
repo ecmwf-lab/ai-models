@@ -9,6 +9,7 @@ import itertools
 import logging
 
 import climetlab as cml
+import numpy as np
 
 LOG = logging.getLogger(__name__)
 
@@ -36,8 +37,10 @@ class FileOutput:
             **self.grib_keys,
         )
 
-    def write(self, *args, **kwargs):
-        return self.output.write(*args, **kwargs)
+    def write(self, data, *args, **kwargs):
+        assert not np.isnan(data).any(), (args, kwargs)
+        return self.output.write(data, *args, **kwargs)
+
 
 
 class HindcastReLabel:
