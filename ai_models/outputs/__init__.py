@@ -42,7 +42,6 @@ class FileOutput:
         return self.output.write(data, *args, **kwargs)
 
 
-
 class HindcastReLabel:
     def __init__(self, owner, output, hindcast_reference_year, **kwargs):
         self.owner = owner

@@ -197,7 +197,6 @@ def _main():
         action="store_true",
     )
 
-
     # TODO: deprecate that option
     parser.add_argument(
         "--model-version",

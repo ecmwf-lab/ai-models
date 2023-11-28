@@ -181,13 +181,13 @@ class Model:
 
     def torch_deterministic_mode(self):
         import torch
+
         LOG.info("Setting deterministic mode for PyTorch")
         os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
         torch.use_deterministic_algorithms(True)
-
 
     @cached_property
     def providers(self):
