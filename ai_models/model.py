@@ -20,7 +20,7 @@ import numpy as np
 from climetlab.utils.humanize import seconds
 from multiurl import download
 
-from .checkpoint import peek, checkpoint_metadata
+from .checkpoint import checkpoint_metadata, peek
 from .inputs import get_input
 from .outputs import get_output
 from .stepper import Stepper
