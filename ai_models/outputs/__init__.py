@@ -38,8 +38,18 @@ class FileOutput:
         )
 
     def write(self, data, *args, **kwargs):
-        assert not np.isnan(data).any(), (args, kwargs)
-        return self.output.write(data, *args, **kwargs)
+        try:
+            return self.output.write(data, *args, **kwargs)
+        except Exception:
+            if np.isnan(data).any():
+                raise ValueError(
+                    f"NaN values found in field. args={args} kwargs={kwargs}"
+                )
+            if np.isinf(data).any():
+                raise ValueError(
+                    f"Infinite values found in field. args={args} kwargs={kwargs}"
+                )
+            raise
 
 
 class HindcastReLabel:

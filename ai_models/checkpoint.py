@@ -5,10 +5,14 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import json
+import logging
 import os
 import pickle
 import zipfile
 from typing import Any
+
+LOG = logging.getLogger(__name__)
 
 
 class FakeStorage:
@@ -46,6 +50,24 @@ def tidy(x):
     return x
 
 
+def checkpoint_metadata(path, name="ai-models.json"):
+    with zipfile.ZipFile(path, "r") as f:
+        metadata = None
+        for b in f.namelist():
+            if os.path.basename(b) == name:
+                if metadata is not None:
+                    raise Exception(
+                        f"Found two metadata.json files in {path}: {metadata} and {b}"
+                    )
+                metadata = b
+
+    if metadata is not None:
+        with zipfile.ZipFile(path, "r") as f:
+            return json.load(f.open(metadata, "r"))
+
+    return None
+
+
 def peek(path):
     with zipfile.ZipFile(path, "r") as f:
         data_pkl = None
@@ -57,6 +79,9 @@ def peek(path):
                     )
                 data_pkl = b
 
+    LOG.info(f"Found data.pkl at {data_pkl}")
+
+    with zipfile.ZipFile(path, "r") as f:
         unpickler = UnpicklerWrapper(f.open(data_pkl, "r"))
         x = tidy(unpickler.load())
         return tidy(x)
