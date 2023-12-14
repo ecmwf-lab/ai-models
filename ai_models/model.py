@@ -20,7 +20,7 @@ import numpy as np
 from climetlab.utils.humanize import seconds
 from multiurl import download
 
-from .checkpoint import checkpoint_metadata, peek
+from .checkpoint import peek
 from .inputs import get_input
 from .outputs import get_output
 from .stepper import Stepper
@@ -395,9 +395,6 @@ class Model:
 
     def peek_into_checkpoint(self, path):
         return peek(path)
-
-    def checkpoint_metadata(self, path):
-        return checkpoint_metadata(path)
 
     def parse_model_args(self, args):
         if args:

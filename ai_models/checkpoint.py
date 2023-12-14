@@ -5,7 +5,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import json
 import logging
 import os
 import pickle
@@ -48,24 +47,6 @@ def tidy(x):
         return x
 
     return x
-
-
-def checkpoint_metadata(path, name="ai-models.json"):
-    with zipfile.ZipFile(path, "r") as f:
-        metadata = None
-        for b in f.namelist():
-            if os.path.basename(b) == name:
-                if metadata is not None:
-                    raise Exception(
-                        f"Found two metadata.json files in {path}: {metadata} and {b}"
-                    )
-                metadata = b
-
-    if metadata is not None:
-        with zipfile.ZipFile(path, "r") as f:
-            return json.load(f.open(metadata, "r"))
-
-    return None
 
 
 def peek(path):
