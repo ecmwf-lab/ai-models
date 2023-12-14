@@ -14,7 +14,9 @@ import time
 from collections import defaultdict
 from functools import cached_property
 
+import climetlab as cml
 import entrypoints
+import numpy as np
 from climetlab.utils.humanize import seconds
 from multiurl import download
 
@@ -40,6 +42,8 @@ class Timer:
 
 
 class ArchiveCollector:
+    UNIQUE = {"date", "hdate", "time", "referenceDate", "type", "stream", "expver"}
+
     def __init__(self) -> None:
         self.expect = 0
         self.request = defaultdict(set)
@@ -48,6 +52,11 @@ class ArchiveCollector:
         self.expect += 1
         for k, v in field.items():
             self.request[k].add(str(v))
+            if k in self.UNIQUE:
+                if len(self.request[k]) > 1:
+                    raise ValueError(
+                        f"Field {field} has different values for {k}: {self.request[k]}"
+                    )
 
 
 class Model:
@@ -55,6 +64,10 @@ class Model:
     assets_extra_dir = None
     retrieve = {}  # Extra parameters for retrieve
     version = 1  # To be overriden in subclasses
+
+    param_level_ml = ([], [])  # param, level
+    param_level_pl = ([], [])  # param, level
+    param_sfc = []  # param
 
     def __init__(self, input, output, download_assets, **kwargs):
         self.input = get_input(input, self, **kwargs)
@@ -90,6 +103,10 @@ class Model:
     @cached_property
     def fields_pl(self):
         return self.input.fields_pl
+
+    @cached_property
+    def fields_ml(self):
+        return self.input.fields_ml
 
     @cached_property
     def fields_sfc(self):
@@ -161,6 +178,16 @@ class Model:
                 raise RuntimeError("GPU is not available")
 
         return device
+
+    def torch_deterministic_mode(self):
+        import torch
+
+        LOG.info("Setting deterministic mode for PyTorch")
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        torch.use_deterministic_algorithms(True)
 
     @cached_property
     def providers(self):
@@ -243,8 +270,9 @@ class Model:
 
         return result
 
-    def datetimes(self):
+    def datetimes(self, step=0):
         if self.staging_dates:
+            assert step == 0, step
             dates = []
             with open(self.staging_dates) as f:
                 for line in f:
@@ -271,7 +299,7 @@ class Model:
             date % 100,
             time // 100,
             time % 100,
-        )
+        ) + datetime.timedelta(hours=step)
         return self._datetimes([full])
 
     def print_fields(self):
@@ -376,6 +404,26 @@ class Model:
         from .provenance import gather_provenance_info
 
         return gather_provenance_info(self.asset_files)
+
+    def forcing_and_constants(self, date, param):
+        ds = cml.load_source(
+            "constants",
+            self.all_fields,
+            date=date,
+            param=param,
+        )
+
+        assert len(ds) == len(param), (len(ds), len(param), date)
+
+        return ds.to_numpy(dtype=np.float32)
+
+    @cached_property
+    def gridpoints(self):
+        return len(self.all_fields[0].grid_points()[0])
+
+    @cached_property
+    def start_datetime(self):
+        return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()
 
 
 def load_model(name, **kwargs):

@@ -5,10 +5,13 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import logging
 import os
 import pickle
 import zipfile
 from typing import Any
+
+LOG = logging.getLogger(__name__)
 
 
 class FakeStorage:
@@ -43,7 +46,7 @@ def tidy(x):
     if isinstance(x, (int, float, str, bool)):
         return x
 
-    return str(type(x))
+    return x
 
 
 def peek(path):
@@ -57,6 +60,9 @@ def peek(path):
                     )
                 data_pkl = b
 
+    LOG.info(f"Found data.pkl at {data_pkl}")
+
+    with zipfile.ZipFile(path, "r") as f:
         unpickler = UnpicklerWrapper(f.open(data_pkl, "r"))
         x = tidy(unpickler.load())
         return tidy(x)

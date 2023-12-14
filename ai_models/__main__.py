@@ -191,6 +191,12 @@ def _main():
         action="store_true",
     )
 
+    parser.add_argument(
+        "--deterministic",
+        help="Fail if GPU is not available",
+        action="store_true",
+    )
+
     # TODO: deprecate that option
     parser.add_argument(
         "--model-version",
