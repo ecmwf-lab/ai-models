@@ -406,9 +406,11 @@ class Model:
         return gather_provenance_info(self.asset_files)
 
     def forcing_and_constants(self, date, param):
+        source = self.all_fields[:1]
+
         ds = cml.load_source(
             "constants",
-            self.all_fields,
+            source,
             date=date,
             param=param,
         )
