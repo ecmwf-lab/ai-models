@@ -83,11 +83,20 @@ class HindcastReLabel:
 
         handle, path = self.output.write(*args, **kwargs)
 
+        # Check that the GRIB keys are as expected
         for key, value in itertools.chain(
             self.output.grib_keys.items(), kwargs.items()
         ):
             if key in ("template",):
                 continue
+
+            # If "param" is a string, we what to compare it to the shortName
+            if key == "param":
+                try:
+                    float(value)
+                except ValueError:
+                    key = "shortName"
+
             assert str(handle.get(key)) == str(value), (key, handle.get(key), value)
 
         return handle, path
