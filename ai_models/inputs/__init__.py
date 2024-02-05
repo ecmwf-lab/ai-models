@@ -136,6 +136,47 @@ class CdsInput(RequestBasedInput):
         raise NotImplementedError("CDS does not support model levels")
 
 
+class OpenDataInput(RequestBasedInput):
+    WHERE = "OPENDATA"
+
+    RESOLS = {(0.25, 0.25): "0p25"}
+
+    def __init__(self, owner, **kwargs):
+        self.owner = owner
+
+    def _adjust(self, kwargs):
+        if "level" in kwargs:
+            # OpenData uses levelist instead of level
+            kwargs["levelist"] = kwargs.pop("level")
+
+        grid = kwargs.pop("grid")
+        if isinstance(grid, list):
+            grid = tuple(grid)
+
+        kwargs["resol"] = self.RESOLS[grid]
+        r = dict(**kwargs)
+        r.update(self.owner.retrieve)
+        return r
+
+    def pl_load_source(self, **kwargs):
+        self._adjust(kwargs)
+        kwargs["levtype"] = "pl"
+        logging.debug("load source ecmwf-open-data %s", kwargs)
+        return cml.load_source("ecmwf-open-data", **kwargs)
+
+    def sfc_load_source(self, **kwargs):
+        self._adjust(kwargs)
+        kwargs["levtype"] = "sfc"
+        logging.debug("load source ecmwf-open-data %s", kwargs)
+        return cml.load_source("ecmwf-open-data", **kwargs)
+
+    def ml_load_source(self, **kwargs):
+        self._adjust(kwargs)
+        kwargs["levtype"] = "ml"
+        logging.debug("load source ecmwf-open-data %s", kwargs)
+        return cml.load_source("ecmwf-open-data", **kwargs)
+
+
 class FileInput:
     def __init__(self, owner, file, **kwargs):
         self.file = file
@@ -162,6 +203,7 @@ INPUTS = dict(
     mars=MarsInput,
     file=FileInput,
     cds=CdsInput,
+    opendata=OpenDataInput,
 )
 
 
