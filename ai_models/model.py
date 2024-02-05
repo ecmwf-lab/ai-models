@@ -64,6 +64,7 @@ class Model:
     assets_extra_dir = None
     retrieve = {}  # Extra parameters for retrieve
     version = 1  # To be overriden in subclasses
+    grib_extra_metadata = {}  # Extra metadata for grib files
 
     param_level_ml = ([], [])  # param, level
     param_level_pl = ([], [])  # param, level
@@ -118,7 +119,7 @@ class Model:
 
     def write(self, *args, **kwargs):
         self.collect_archive_requests(
-            self.output.write(*args, **kwargs),
+            self.output.write(*args, **kwargs, **self.grib_extra_metadata),
         )
 
     def collect_archive_requests(self, written):

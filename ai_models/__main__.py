@@ -37,6 +37,14 @@ def _main():
     )
 
     parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase verbosity",
+    )
+
+    parser.add_argument(
         "--retrieve-requests",
         help=(
             "Print mars requests to stdout."
