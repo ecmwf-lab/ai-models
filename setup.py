@@ -45,7 +45,7 @@ setuptools.setup(
         "entrypoints",
         "climetlab>=0.19.0",
         "multiurl",
-        "ecmwflibs>=0.5.3",
+        "ecmwflibs>=0.6.1",
         "gputil",
     ],
     extras_require={
