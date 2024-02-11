@@ -47,6 +47,7 @@ setuptools.setup(
         "multiurl",
         "ecmwflibs>=0.6.1",
         "gputil",
+        "earthkit-meteo",
     ],
     extras_require={
         "provenance": [
