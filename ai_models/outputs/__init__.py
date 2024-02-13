@@ -9,6 +9,7 @@ import itertools
 import logging
 
 import climetlab as cml
+import entrypoints
 import numpy as np
 
 LOG = logging.getLogger(__name__)
@@ -110,18 +111,15 @@ class NoneOutput:
         pass
 
 
-OUTPUTS = dict(
-    file=FileOutput,
-    none=NoneOutput,
-)
-
-
 def get_output(name, owner, *args, **kwargs):
-    result = OUTPUTS[name](owner, *args, **kwargs)
+    result = available_outputs()[name].load()(owner, *args, **kwargs)
     if kwargs.get("hindcast_reference_year") is not None:
         result = HindcastReLabel(owner, result, **kwargs)
     return result
 
 
 def available_outputs():
-    return sorted(OUTPUTS.keys())
+    result = {}
+    for e in entrypoints.get_group_all("ai_models.output"):
+        result[e.name] = e
+    return result
