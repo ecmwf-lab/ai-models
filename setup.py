@@ -58,6 +58,12 @@ setuptools.setup(
     keywords="tool",
     entry_points={
         "console_scripts": ["ai-models=ai_models.__main__:main"],
+        "ai_models.input": [
+            "file=ai_models.inputs:FileInput",
+            "mars=ai_models.inputs:MarsInput",
+            "cds=ai_models.inputs:CdsInput",
+            "opendata=ai_models.inputs:OpenDataInput",
+        ],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",

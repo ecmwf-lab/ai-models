@@ -9,6 +9,7 @@ import logging
 from functools import cached_property
 
 import climetlab as cml
+import entrypoints
 
 LOG = logging.getLogger(__name__)
 
@@ -199,17 +200,12 @@ class FileInput:
         return cml.load_source("file", self.file)
 
 
-INPUTS = dict(
-    mars=MarsInput,
-    file=FileInput,
-    cds=CdsInput,
-    opendata=OpenDataInput,
-)
-
-
 def get_input(name, *args, **kwargs):
-    return INPUTS[name](*args, **kwargs)
+    return available_inputs()[name].load()(*args, **kwargs)
 
 
 def available_inputs():
-    return sorted(INPUTS.keys())
+    result = {}
+    for e in entrypoints.get_group_all("ai_models.input"):
+        result[e.name] = e
+    return result

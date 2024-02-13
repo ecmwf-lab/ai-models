@@ -85,7 +85,7 @@ def _main():
         "--input",
         default="mars",
         help="Source to use",
-        choices=available_inputs(),
+        choices=sorted(available_inputs()),
     )
 
     parser.add_argument(
