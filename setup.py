@@ -66,6 +66,10 @@ setuptools.setup(
             "cds=ai_models.inputs:CdsInput",
             "opendata=ai_models.inputs:OpenDataInput",
         ],
+        "ai_models.output": [
+            "file=ai_models.outputs:FileOutput",
+            "none=ai_models.outputs:NoneOutput",
+        ],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",

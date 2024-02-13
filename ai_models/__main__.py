@@ -97,7 +97,7 @@ def _main(argv):
         "--output",
         default="file",
         help="Where to output the results",
-        choices=available_outputs(),
+        choices=sorted(available_outputs()),
     )
 
     parser.add_argument(
