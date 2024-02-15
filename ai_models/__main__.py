@@ -18,7 +18,7 @@ from .outputs import available_outputs
 LOG = logging.getLogger(__name__)
 
 
-def _main():
+def _main(argv):
     parser = argparse.ArgumentParser()
 
     # See https://github.com/pytorch/pytorch/issues/77764
@@ -212,7 +212,7 @@ def _main():
         help="Model version",
     )
 
-    if "--models" not in sys.argv:
+    if "--models" not in argv:
         parser.add_argument(
             "model",
             metavar="MODEL",
@@ -220,7 +220,7 @@ def _main():
             help="The model to run",
         )
 
-    args, unknownargs = parser.parse_known_args()
+    args, unknownargs = parser.parse_known_args(argv)
 
     if args.models:
         for p in sorted(available_models()):
@@ -302,7 +302,7 @@ def _main():
 
 def main():
     with Timer("Total time"):
-        _main()
+        _main(sys.argv[1:])
 
 
 if __name__ == "__main__":
