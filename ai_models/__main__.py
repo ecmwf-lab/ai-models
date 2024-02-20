@@ -14,6 +14,7 @@ import sys
 from .inputs import available_inputs
 from .model import Timer, available_models, load_model
 from .outputs import available_outputs
+from .remote import RemoteRunner
 
 LOG = logging.getLogger(__name__)
 
@@ -220,6 +221,18 @@ def _main(argv):
             help="The model to run",
         )
 
+    parser.add_argument(
+        "--remote-url",
+        default=os.getenv("AI_MODELS_REMOTE_URL"),
+        help="Remote endpoint URL",
+    )
+
+    parser.add_argument(
+        "--remote-token",
+        default=os.getenv("AI_MODELS_REMOTE_TOKEN"),
+        help="Remote endpoint auth token",
+    )
+
     args, unknownargs = parser.parse_known_args(argv)
 
     if args.models:
@@ -259,7 +272,18 @@ def _main(argv):
                 "You need to specify --retrieve-requests or --archive-requests"
             )
 
-    run(vars(args), unknownargs)
+    if args.remote_url is not None:
+        if args.remote_token is None:
+            parser.error("You need to specify --remote-token")
+
+        RemoteRunner(
+            url=args.remote_url,
+            token=args.remote_token,
+            input_file=args.file,
+            output_file=args.path,
+        ).run(vars(args), unknownargs)
+    else:
+        run(vars(args), unknownargs)
 
 
 def run(cfg: dict, model_args: list):
