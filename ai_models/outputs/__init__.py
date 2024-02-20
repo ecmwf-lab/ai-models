@@ -7,6 +7,7 @@
 
 import itertools
 import logging
+from functools import cached_property
 
 import climetlab as cml
 import numpy as np
@@ -24,17 +25,21 @@ class FileOutput:
         LOG.info("Writing results to %s.", path)
         self.path = path
         self.owner = owner
+        self.metadata = metadata
 
-        edition = metadata.pop("edition", 2)
+    @cached_property
+    def output(self):
+
+        edition = self.metadata.pop("edition", 2)
 
         self.grib_keys = dict(
             edition=edition,
             generatingProcessIdentifier=self.owner.version,
         )
-        self.grib_keys.update(metadata)
+        self.grib_keys.update(self.metadata)
 
-        self.output = cml.new_grib_output(
-            path,
+        return cml.new_grib_output(
+            self.path,
             split_output=True,
             **self.grib_keys,
         )
