@@ -17,7 +17,7 @@ class BearerAuth(requests.auth.AuthBase):
         return r
 
 
-class RemoteRunner:
+class RemoteClient:
     def __init__(self, url: str, token: str, output_file: str, input_file: str = None):
         self.url = url
         self.auth = BearerAuth(token)

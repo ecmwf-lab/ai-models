@@ -24,6 +24,7 @@ from multiurl import download
 from .checkpoint import peek
 from .inputs import get_input
 from .outputs import get_output
+from .remote import RemoteClient
 from .stepper import Stepper
 
 LOG = logging.getLogger(__name__)
@@ -472,18 +473,24 @@ class Model:
                         check=True,
                     )
 
-    def remove(self, **kwargs):
-        client = None  # api.Client()
+    def remote(self, cfg: dict, model_args: list):
         with tempfile.TemporaryDirectory() as tmpdirname:
             input_file = os.path.join(tmpdirname, "input.grib")
+            output_file = os.path.join(tmpdirname, "output.grib")
             self.all_fields.save(input_file)
 
-            reference = client.upload(input_file)
-            result = client.execute(reference, **kwargs)
+            client = RemoteClient(
+                url=cfg["remote_url"],
+                token=cfg["remote_token"],
+                input_file=input_file,
+                output_file=output_file,
+            )
 
-            ds = cml.load_source("url", result)
+            client.run(cfg, model_args)
+
+            ds = cml.load_source("file", output_file)
             for field in ds:
-                self.write(field)
+                self.write(None, template=field)
 
 
 def load_model(name, **kwargs):

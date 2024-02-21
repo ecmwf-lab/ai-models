@@ -14,7 +14,6 @@ import sys
 from .inputs import available_inputs
 from .model import Timer, available_models, load_model
 from .outputs import available_outputs
-from .remote import RemoteRunner
 
 LOG = logging.getLogger(__name__)
 
@@ -276,14 +275,7 @@ def _main(argv):
         if args.remote_token is None:
             parser.error("You need to specify --remote-token")
 
-        RemoteRunner(
-            url=args.remote_url,
-            token=args.remote_token,
-            input_file=args.file,
-            output_file=args.path,
-        ).run(vars(args), unknownargs)
-    else:
-        run(vars(args), unknownargs)
+    run(vars(args), unknownargs)
 
 
 def run(cfg: dict, model_args: list):
@@ -304,11 +296,9 @@ def run(cfg: dict, model_args: list):
         model.print_assets_list()
         sys.exit(0)
 
-    remote = False
-
     try:
-        if remote:
-            model.remote(vars(args))
+        if cfg.get("remote_url", None) is not None:
+            model.remote(cfg, model_args)
         else:
             model.run()
     except FileNotFoundError as e:
