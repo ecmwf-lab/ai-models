@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 import time
 from collections import defaultdict
 from functools import cached_property
@@ -470,6 +471,19 @@ class Model:
                         time=int(self.start_datetime.strftime("%H%M")),
                         check=True,
                     )
+
+    def remove(self, **kwargs):
+        client = None  # api.Client()
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            input_file = os.path.join(tmpdirname, "input.grib")
+            self.all_fields.save(input_file)
+
+            reference = client.upload(input_file)
+            result = client.execute(reference, **kwargs)
+
+            ds = cml.load_source("url", result)
+            for field in ds:
+                self.write(field)
 
 
 def load_model(name, **kwargs):
