@@ -7,6 +7,7 @@
 
 import itertools
 import logging
+from functools import cached_property
 
 import climetlab as cml
 import numpy as np
@@ -17,29 +18,36 @@ LOG = logging.getLogger(__name__)
 class FileOutput:
     def __init__(self, owner, path, metadata, **kwargs):
         self._first = True
+        metadata.setdefault("stream", "oper")
         metadata.setdefault("expver", owner.expver)
         metadata.setdefault("class", "ml")
 
         LOG.info("Writing results to %s.", path)
         self.path = path
         self.owner = owner
+        self.metadata = metadata
 
-        edition = metadata.pop("edition", 2)
+    @cached_property
+    def output(self):
+
+        edition = self.metadata.pop("edition", 2)
 
         self.grib_keys = dict(
-            edition=edition, generatingProcessIdentifier=self.owner.version
+            edition=edition,
+            generatingProcessIdentifier=self.owner.version,
         )
-        self.grib_keys.update(metadata)
+        self.grib_keys.update(self.metadata)
 
-        self.output = cml.new_grib_output(
-            path,
+        return cml.new_grib_output(
+            self.path,
             split_output=True,
             **self.grib_keys,
         )
 
-    def write(self, data, *args, **kwargs):
+    def write(self, data, *args, check=False, **kwargs):
         try:
-            return self.output.write(data, *args, **kwargs)
+            handle, path = self.output.write(data, *args, **kwargs)
+
         except Exception:
             if np.isnan(data).any():
                 raise ValueError(
@@ -50,6 +58,23 @@ class FileOutput:
                     f"Infinite values found in field. args={args} kwargs={kwargs}"
                 )
             raise
+
+        if check:
+            # Check that the GRIB keys are as expected
+            for key, value in itertools.chain(self.grib_keys.items(), kwargs.items()):
+                if key in ("template",):
+                    continue
+
+                # If "param" is a string, we what to compare it to the shortName
+                if key == "param":
+                    try:
+                        float(value)
+                    except ValueError:
+                        key = "shortName"
+
+                assert str(handle.get(key)) == str(value), (key, handle.get(key), value)
+
+        return handle, path
 
 
 class HindcastReLabel:
@@ -81,25 +106,7 @@ class HindcastReLabel:
             kwargs["referenceDate"] = referenceDate
             kwargs["hdate"] = date
 
-        handle, path = self.output.write(*args, **kwargs)
-
-        # Check that the GRIB keys are as expected
-        for key, value in itertools.chain(
-            self.output.grib_keys.items(), kwargs.items()
-        ):
-            if key in ("template",):
-                continue
-
-            # If "param" is a string, we what to compare it to the shortName
-            if key == "param":
-                try:
-                    float(value)
-                except ValueError:
-                    key = "shortName"
-
-            assert str(handle.get(key)) == str(value), (key, handle.get(key), value)
-
-        return handle, path
+        return self.output.write(*args, check=True, **kwargs)
 
 
 class NoneOutput:

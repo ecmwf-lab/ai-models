@@ -43,10 +43,11 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         "entrypoints",
-        "climetlab>=0.19.0",
+        "climetlab>=0.20.11",
         "multiurl",
         "ecmwflibs>=0.6.1",
         "gputil",
+        "earthkit-meteo",
     ],
     extras_require={
         "provenance": [

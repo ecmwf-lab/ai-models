@@ -304,8 +304,13 @@ def run(cfg: dict, model_args: list):
         model.print_assets_list()
         sys.exit(0)
 
+    remote = False
+
     try:
-        model.run()
+        if remote:
+            model.remote(vars(args))
+        else:
+            model.run()
     except FileNotFoundError as e:
         LOG.exception(e)
         LOG.error(

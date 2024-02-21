@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 import time
 from collections import defaultdict
 from functools import cached_property
@@ -319,10 +320,10 @@ class Model:
 
     def _print_request(self, verb, request, file=sys.stdout):
         r = [verb]
-        for k, v in request.items():
+        for k, v in sorted(request.items()):
             if not isinstance(v, (list, tuple, set)):
                 v = [v]
-            v = [str(_) for _ in v]
+            v = [str(_) for _ in sorted(v)]
             v = "/".join(v)
             r.append(f"{k}={v}")
 
@@ -427,6 +428,62 @@ class Model:
     @cached_property
     def start_datetime(self):
         return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()
+
+    def write_input_fields(
+        self,
+        fields,
+        accumulations=None,
+        accumulations_template=None,
+        accumulations_shape=None,
+        ignore=None,
+    ):
+        if ignore is None:
+            ignore = []
+
+        with self.timer("Writing step 0"):
+            for field in fields:
+                if field.metadata("shortName") in ignore:
+                    continue
+
+                if field.valid_datetime() == self.start_datetime:
+                    self.write(
+                        None,
+                        template=field,
+                        step=0,
+                    )
+
+            if accumulations is not None:
+                if accumulations_template is None:
+                    accumulations_template = fields.sel(param="2t")[0]
+
+                if accumulations_shape is None:
+                    accumulations_shape = accumulations_template.shape
+
+                for param in accumulations:
+                    self.write(
+                        np.zeros(accumulations_shape, dtype=np.float32),
+                        stepType="accum",
+                        template=accumulations_template,
+                        param=param,
+                        startStep=0,
+                        endStep=0,
+                        date=int(self.start_datetime.strftime("%Y%m%d")),
+                        time=int(self.start_datetime.strftime("%H%M")),
+                        check=True,
+                    )
+
+    def remove(self, **kwargs):
+        client = None  # api.Client()
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            input_file = os.path.join(tmpdirname, "input.grib")
+            self.all_fields.save(input_file)
+
+            reference = client.upload(input_file)
+            result = client.execute(reference, **kwargs)
+
+            ds = cml.load_source("url", result)
+            for field in ds:
+                self.write(field)
 
 
 def load_model(name, **kwargs):
