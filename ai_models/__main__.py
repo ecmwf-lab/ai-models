@@ -221,15 +221,10 @@ def _main(argv):
         )
 
     parser.add_argument(
-        "--remote-url",
-        default=os.getenv("AI_MODELS_REMOTE_URL"),
-        help="Remote endpoint URL",
-    )
-
-    parser.add_argument(
-        "--remote-token",
-        default=os.getenv("AI_MODELS_REMOTE_TOKEN"),
-        help="Remote endpoint auth token",
+        "--remote",
+        help="Enable remote execution, read url and token from ~/.config/ai-models/api.yaml",
+        action="store_true",
+        dest="remote_execution",
     )
 
     args, unknownargs = parser.parse_known_args(argv)
@@ -271,10 +266,6 @@ def _main(argv):
                 "You need to specify --retrieve-requests or --archive-requests"
             )
 
-    if args.remote_url is not None:
-        if args.remote_token is None:
-            parser.error("You need to specify --remote-token")
-
     run(vars(args), unknownargs)
 
 
@@ -297,7 +288,7 @@ def run(cfg: dict, model_args: list):
         sys.exit(0)
 
     try:
-        if cfg.get("remote_url", None) is not None:
+        if cfg["remote_execution"]:
             model.remote(cfg, model_args)
         else:
             model.run()

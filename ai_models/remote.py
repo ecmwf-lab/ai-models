@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import time
 from urllib.parse import urljoin
@@ -19,16 +20,49 @@ class BearerAuth(requests.auth.AuthBase):
 
 
 class RemoteClient:
-    def __init__(self, url: str, token: str, output_file: str, input_file: str = None):
+    def __init__(
+        self,
+        input_file: str = None,
+        output_file: str = "output.grib",
+        url: str = None,
+        token: str = None,
+    ):
+        root = os.path.join(os.path.expanduser("~"), ".config", "ai-models")
+        os.makedirs(root, exist_ok=True)
+
+        configfile = os.path.join(root, "api.yaml")
+
+        if os.path.exists(configfile):
+            from yaml import safe_load
+
+            with open(configfile, "r") as f:
+                config = safe_load(f) or {}
+
+                url = config.get("url", None)
+                token = config.get("token", None)
+
+        if url is None:
+            url = os.getenv("AI_MODELS_REMOTE_URL", "https://ai-models.ecmwf.int")
+            LOG.info("Using remote %s", url)
+
+        token = token or os.getenv("AI_MODELS_REMOTE_TOKEN", None)
+
+        if token is None:
+            LOG.error(
+                "Missing remote token. Set it in %s or in env AI_MODELS_REMOTE_TOKEN",
+                configfile,
+            )
+            sys.exit(1)
+
         self.url = url
+        self.token = token
         self.auth = BearerAuth(token)
         self.output_file = output_file
         self.input_file = input_file
         self._timeout = 300
 
     def run(self, cfg: dict, model_args: list):
-        cfg.pop("remote_url", None)
-        cfg.pop("remote_token", None)
+        cfg.pop("remote_execution", None)
         cfg["model_args"] = model_args
 
         # upload file

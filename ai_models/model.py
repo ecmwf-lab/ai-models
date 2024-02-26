@@ -480,8 +480,6 @@ class Model:
             self.all_fields.save(input_file)
 
             client = RemoteClient(
-                url=cfg["remote_url"],
-                token=cfg["remote_token"],
                 input_file=input_file,
                 output_file=output_file,
             )
