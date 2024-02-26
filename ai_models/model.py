@@ -194,32 +194,13 @@ class Model:
 
     @cached_property
     def providers(self):
-        import platform
-
-        import GPUtil
         import onnxruntime as ort
 
+        available_providers = ort.get_available_providers()
         providers = []
-
-        try:
-            if GPUtil.getAvailable():
-                providers += [
-                    "CUDAExecutionProvider",  # CUDA
-                ]
-        except Exception:
-            pass
-
-        if sys.platform == "darwin":
-            if platform.machine() == "arm64":
-                # This one is not working with error: CoreML does not support input dim > 16384
-                # providers += ["CoreMLExecutionProvider"]
-                pass
-
-        providers += [
-            "CPUExecutionProvider",  # CPU
-        ]
-
-        LOG.info("ONNXRuntime providers: %s", providers)
+        for n in ["CUDAExecutionProvider", "CPUExecutionProvider"]:
+            if n in available_providers:
+                providers.append(n)
 
         LOG.info(
             "Using device '%s'. The speed of inference depends greatly on the device.",
@@ -230,6 +211,10 @@ class Model:
             assert isinstance(ort.get_device(), str)
             if ort.get_device() == "CPU":
                 raise RuntimeError("GPU is not available")
+
+            providers = ["CUDAExecutionProvider"]
+
+        LOG.info("ONNXRuntime providers: %s", providers)
 
         return providers
 
