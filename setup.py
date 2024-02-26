@@ -48,7 +48,7 @@ setuptools.setup(
         "ecmwflibs>=0.6.1",
         "gputil",
         "earthkit-meteo",
-        "pyyaml"
+        "pyyaml",
     ],
     extras_require={
         "provenance": [

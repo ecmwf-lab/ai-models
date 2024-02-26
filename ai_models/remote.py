@@ -123,7 +123,7 @@ class RemoteClient:
             data = response.json()
             href = data["href"]
             status = data["status"].lower()
-        except:
+        except Exception:
             status = f"{response.status_code} {response.url} {response.text}"
             href = None
 
