@@ -225,6 +225,7 @@ def _main(argv):
         help="Enable remote execution, read url and token from ~/.config/ai-models/api.yaml",
         action="store_true",
         dest="remote_execution",
+        default=(os.environ.get("AI_MODELS_REMOTE", "0") == "1"),
     )
 
     args, unknownargs = parser.parse_known_args(argv)
