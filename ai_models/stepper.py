@@ -41,6 +41,9 @@ class Stepper:
         self.last = now
 
     def __exit__(self, *args):
+        if self.num_steps == 0:
+            return
+
         elapsed = time.time() - self.start
         LOG.info("Elapsed: %s.", seconds(elapsed))
         LOG.info("Average: %s per step.", seconds(elapsed / self.num_steps))
