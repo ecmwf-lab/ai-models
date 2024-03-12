@@ -273,6 +273,7 @@ def _main(argv):
 def run(cfg: dict, model_args: list):
     if cfg["remote_execution"]:
         from .remote import RemoteModel
+
         model = RemoteModel(**cfg, model_args=model_args)
     else:
         model = load_model(cfg["model"], **cfg, model_args=model_args)
