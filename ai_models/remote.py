@@ -21,7 +21,7 @@ class RemoteModel(Model):
         self.cfg["download_assets"] = False
         self.cfg["assets_extra_dir"] = None
         self._param = {}
-        self.api = RemoteClient()
+        self.api = RemoteAPI()
 
         super().__init__(**self.cfg)
 
@@ -88,7 +88,7 @@ class BearerAuth(requests.auth.AuthBase):
         return r
 
 
-class RemoteClient:
+class RemoteAPI:
     def __init__(
         self,
         input_file: str = None,
