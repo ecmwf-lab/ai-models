@@ -271,7 +271,11 @@ def _main(argv):
 
 
 def run(cfg: dict, model_args: list):
-    model = load_model(cfg["model"], **cfg, model_args=model_args)
+    if cfg["remote_execution"]:
+        from .remote import RemoteModel
+        model = RemoteModel(**cfg, model_args=model_args)
+    else:
+        model = load_model(cfg["model"], **cfg, model_args=model_args)
 
     if cfg["fields"]:
         model.print_fields()
@@ -289,10 +293,7 @@ def run(cfg: dict, model_args: list):
         sys.exit(0)
 
     try:
-        if cfg["remote_execution"]:
-            model.remote(cfg, model_args)
-        else:
-            model.run()
+        model.run()
     except FileNotFoundError as e:
         LOG.exception(e)
         LOG.error(

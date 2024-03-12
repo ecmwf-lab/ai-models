@@ -1,13 +1,46 @@
 import logging
 import os
 import sys
+import tempfile
 import time
+from functools import cached_property
 from urllib.parse import urljoin
 
+import climetlab as cml
 import requests
 from multiurl import download, robust
 
+from .model import Model
+
 LOG = logging.getLogger(__name__)
+
+
+class RemoteModel(Model):
+    def __init__(self, **kwargs):
+        kwargs["download_assets"] = False
+
+        super().__init__(**kwargs)
+
+        self.cfg = kwargs
+        self.client = RemoteClient()
+
+    def run(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            input_file = os.path.join(tmpdirname, "input.grib")
+            output_file = os.path.join(tmpdirname, "output.grib")
+            self.all_fields.save(input_file)
+
+            self.client.input_file = input_file
+            self.client.output_file = output_file
+
+            self.client.run(self.cfg)
+
+            ds = cml.load_source("file", output_file)
+            for field in ds:
+                self.write(None, template=field)
+
+    def parse_model_args(self, args):
+        return None
 
 
 class BearerAuth(requests.auth.AuthBase):
@@ -61,10 +94,7 @@ class RemoteClient:
         self.input_file = input_file
         self._timeout = 300
 
-    def run(self, cfg: dict, model_args: list):
-        cfg.pop("remote_execution", None)
-        cfg["model_args"] = model_args
-
+    def run(self, cfg: dict):
         # upload file
         with open(self.input_file, "rb") as f:
             LOG.info("Uploading input file to remote")
