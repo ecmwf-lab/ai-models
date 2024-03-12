@@ -112,7 +112,7 @@ class RemoteAPI:
 
         if url is None:
             url = os.getenv("AI_MODELS_REMOTE_URL", "https://ai-models.ecmwf.int")
-            LOG.info("Using remote %s", url)
+            LOG.info("Using remote server %s", url)
 
         token = token or os.getenv("AI_MODELS_REMOTE_TOKEN", None)
 
@@ -132,29 +132,32 @@ class RemoteAPI:
 
     def run(self, cfg: dict):
         # upload file
-        with open(self.input_file, "rb") as f:
-            LOG.info("Uploading input file to remote")
-            status, href = self._request(requests.post, "upload", data=f)
+        with open(self.input_file, "rb") as file:
+            LOG.info("Uploading input file to remote server")
+            _, status, href = self._request(requests.post, "upload", data=file)
 
         if status != "success":
             LOG.error(status)
             sys.exit(1)
 
-        # submit job
-        status, href = self._request(requests.post, href, json=cfg)
+        # submit task
+        id, status, href = self._request(requests.post, href, json=cfg)
+
+        LOG.info("Request submitted")
+        LOG.info("Request id: %s", id)
 
         if status != "queued":
             LOG.error(status)
             sys.exit(1)
 
-        LOG.info("Job status: queued")
+        LOG.info("Request is queued")
         last_status = status
 
         while True:
-            status, href = self._request(requests.get, href)
+            _, status, href = self._request(requests.get, href)
 
             if status != last_status:
-                LOG.info("Job status: %s", status)
+                LOG.info("Request is %s", status)
                 last_status = status
 
             if status == "failed":
@@ -163,7 +166,7 @@ class RemoteAPI:
             if status == "ready":
                 break
 
-            time.sleep(4)
+            time.sleep(5)
 
         download(urljoin(self.url, href), target=self.output_file)
 
@@ -180,29 +183,33 @@ class RemoteAPI:
             )
 
     def _request(self, type, href, data=None, json=None, auth=None, with_status=True):
-        r = robust(type, retry_after=30)(
+        response = robust(type, retry_after=30)(
             urljoin(self.url, href),
             json=json,
             data=data,
             auth=self.auth,
             timeout=self._timeout,
         )
+
+        if response.status_code == 401:
+            LOG.error("Unauthorized Access. Check your token.")
+            sys.exit(1)
+
         if with_status:
-            status, href = self._update_state(r)
-            return status, href
+            id, status, href = self._update_state(response)
+            return id, status, href
         else:
-            return r.json()
+            return response.json()
 
     def _update_state(self, response: requests.Response):
-        if response.status_code == 401:
-            return "Unauthorized Access", None
-
         try:
             data = response.json()
             href = data["href"]
             status = data["status"].lower()
+            id = data["id"]
         except Exception:
             status = f"{response.status_code} {response.url} {response.text}"
             href = None
+            id = None
 
-        return status, href
+        return id, status, href
