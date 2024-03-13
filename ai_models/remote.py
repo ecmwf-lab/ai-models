@@ -25,6 +25,8 @@ class RemoteModel(Model):
         self._param = {}
         self.api = RemoteAPI()
 
+        self.load_parameters()
+
         super().__init__(**self.cfg)
 
     def __getattr__(self, name):
@@ -47,6 +49,24 @@ class RemoteModel(Model):
 
     def parse_model_args(self, args):
         return None
+
+    def load_parameters(self):
+        params = self.api.metadata(
+            self.model,
+            [
+                "expver",
+                "version",
+                "grid",
+                "area",
+                "param_level_ml",
+                "param_level_pl",
+                "param_sfc",
+                "lagged",
+                "grib_extra_metadata",
+                "retrieve",
+            ],
+        )
+        self._param.update(params)
 
     def get_parameter(self, name):
         if (param := self._param.get(name, None)) is not None:
