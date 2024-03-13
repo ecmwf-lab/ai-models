@@ -3,7 +3,7 @@ import os
 import sys
 import tempfile
 import time
-from functools import cache, cached_property
+from functools import cached_property
 from urllib.parse import urljoin
 
 import climetlab as cml
@@ -20,10 +20,15 @@ class RemoteModel(Model):
         self.cfg = kwargs
         self.cfg["download_assets"] = False
         self.cfg["assets_extra_dir"] = None
+
+        self.model = self.cfg["model"]
         self._param = {}
         self.api = RemoteAPI()
 
         super().__init__(**self.cfg)
+
+    def __getattr__(self, name):
+        return self.get_parameter(name)
 
     def run(self):
         with tempfile.TemporaryDirectory() as tmpdirname:
@@ -43,40 +48,41 @@ class RemoteModel(Model):
     def parse_model_args(self, args):
         return None
 
-    def __getattr__(self, name):
-        return self.get_param(name)
+    def get_parameter(self, name):
+        if (param := self._param.get(name, None)) is not None:
+            return param
 
-    @cache
-    def get_param(self, name):
-        return self.api.get_param(self.cfg["model"], name).get(name, None)
+        self._param.update(self.api.metadata(self.model, name))
+
+        return self._param[name]
 
     @cached_property
     def param_level_ml(self):
-        return self.get_param("param_level_ml") or ([], [])
+        return self.get_parameter("param_level_ml") or ([], [])
 
     @cached_property
     def param_level_pl(self):
-        return self.get_param("param_level_pl") or ([], [])
+        return self.get_parameter("param_level_pl") or ([], [])
 
     @cached_property
     def param_sfc(self):
-        return self.get_param("param_sfc") or []
+        return self.get_parameter("param_sfc") or []
 
     @cached_property
     def lagged(self):
-        return self.get_param("lagged") or False
+        return self.get_parameter("lagged") or False
 
     @cached_property
     def version(self):
-        return self.get_param("version") or 1
+        return self.get_parameter("version") or 1
 
     @cached_property
     def grib_extra_metadata(self):
-        return self.get_param("grib_extra_metadata") or {}
+        return self.get_parameter("grib_extra_metadata") or {}
 
     @cached_property
     def retrieve(self):
-        return self.get_param("retrieve") or {}
+        return self.get_parameter("retrieve") or {}
 
 
 class BearerAuth(requests.auth.AuthBase):
@@ -172,15 +178,17 @@ class RemoteAPI:
 
         LOG.debug("Result written to %s", self.output_file)
 
-    def get_param(self, model, param):
+    def metadata(self, model, param) -> dict:
         if isinstance(param, str):
             return self._request(
                 requests.get, f"metadata/{model}/{param}", with_status=False
             )
-        else:
+        elif isinstance(param, (list, dict)):
             return self._request(
                 requests.post, f"metadata/{model}", json=param, with_status=False
             )
+        else:
+            raise ValueError("param must be a string, list, or dict with 'param' key.")
 
     def _request(self, type, href, data=None, json=None, auth=None, with_status=True):
         response = robust(type, retry_after=30)(
