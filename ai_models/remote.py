@@ -164,6 +164,8 @@ class RemoteAPI:
 
         if data["status"] != "success":
             LOG.error(data["status"])
+            if reason := data.get("reason"):
+                LOG.error(reason)
             sys.exit(1)
 
         # submit task
@@ -173,6 +175,8 @@ class RemoteAPI:
 
         if data["status"] != "queued":
             LOG.error(data["status"])
+            if reason := data.get("reason"):
+                LOG.error(reason)
             sys.exit(1)
 
         LOG.info("Request id: %s", data["id"])
@@ -188,6 +192,8 @@ class RemoteAPI:
                 last_status = data["status"]
 
             if data["status"] == "failed":
+                if reason := data.get("reason"):
+                    LOG.error(reason)
                 sys.exit(1)
 
             if data["status"] == "ready":
