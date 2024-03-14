@@ -160,57 +160,54 @@ class RemoteAPI:
         # upload file
         with open(self.input_file, "rb") as file:
             LOG.info("Uploading input file to remote server")
-            _, status, href = self._request(requests.post, "upload", data=file)
+            data = self._request(requests.post, "upload", data=file)
 
-        if status != "success":
-            LOG.error(status)
+        if data["status"] != "success":
+            LOG.error(data["status"])
             sys.exit(1)
 
         # submit task
-        id, status, href = self._request(requests.post, href, json=cfg)
+        data = self._request(requests.post, data["href"], json=cfg)
 
         LOG.info("Request submitted")
-        LOG.info("Request id: %s", id)
 
-        if status != "queued":
-            LOG.error(status)
+        if data["status"] != "queued":
+            LOG.error(data["status"])
             sys.exit(1)
 
+        LOG.info("Request id: %s", data["id"])
         LOG.info("Request is queued")
-        last_status = status
+
+        last_status = data["status"]
 
         while True:
-            _, status, href = self._request(requests.get, href)
+            data = self._request(requests.get, data["href"])
 
-            if status != last_status:
-                LOG.info("Request is %s", status)
-                last_status = status
+            if data["status"] != last_status:
+                LOG.info("Request is %s", data["status"])
+                last_status = data["status"]
 
-            if status == "failed":
+            if data["status"] == "failed":
                 sys.exit(1)
 
-            if status == "ready":
+            if data["status"] == "ready":
                 break
 
             time.sleep(5)
 
-        download(urljoin(self.url, href), target=self.output_file)
+        download(urljoin(self.url, data["href"]), target=self.output_file)
 
         LOG.debug("Result written to %s", self.output_file)
 
     def metadata(self, model, param) -> dict:
         if isinstance(param, str):
-            return self._request(
-                requests.get, f"metadata/{model}/{param}", with_status=False
-            )
+            return self._request(requests.get, f"metadata/{model}/{param}")
         elif isinstance(param, (list, dict)):
-            return self._request(
-                requests.post, f"metadata/{model}", json=param, with_status=False
-            )
+            return self._request(requests.post, f"metadata/{model}", json=param)
         else:
             raise ValueError("param must be a string, list, or dict with 'param' key.")
 
-    def _request(self, type, href, data=None, json=None, auth=None, with_status=True):
+    def _request(self, type, href, data=None, json=None, auth=None):
         response = robust(type, retry_after=30)(
             urljoin(self.url, href),
             json=json,
@@ -223,21 +220,12 @@ class RemoteAPI:
             LOG.error("Unauthorized Access. Check your token.")
             sys.exit(1)
 
-        if with_status:
-            id, status, href = self._update_state(response)
-            return id, status, href
-        else:
-            return response.json()
-
-    def _update_state(self, response: requests.Response):
         try:
             data = response.json()
-            href = data["href"]
-            status = data["status"].lower()
-            id = data["id"]
-        except Exception:
-            status = f"{response.status_code} {response.url} {response.text}"
-            href = None
-            id = None
 
-        return id, status, href
+            if status := data.get("status"):
+                data["status"] = status.lower()
+
+            return data
+        except Exception:
+            return {"status": f"{response.url} {response.status_code} {response.text}"}
