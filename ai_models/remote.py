@@ -213,6 +213,14 @@ class RemoteAPI:
         else:
             raise ValueError("param must be a string, list, or dict with 'param' key.")
 
+    def models(self):
+        results = self._request(requests.get, "models")
+
+        if not isinstance(results, list):
+            return []
+
+        return results
+
     def _request(self, type, href, data=None, json=None, auth=None):
         response = robust(type, retry_after=30)(
             urljoin(self.url, href),
@@ -229,7 +237,7 @@ class RemoteAPI:
         try:
             data = response.json()
 
-            if status := data.get("status"):
+            if isinstance(data, dict) and (status := data.get("status")):
                 data["status"] = status.lower()
 
             return data

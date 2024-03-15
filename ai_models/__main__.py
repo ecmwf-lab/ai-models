@@ -231,7 +231,19 @@ def _main(argv):
     args, unknownargs = parser.parse_known_args(argv)
 
     if args.models:
-        for p in sorted(available_models()):
+        if args.remote_execution:
+            from .remote import RemoteAPI
+
+            api = RemoteAPI()
+            models = api.models()
+            if len(models) == 0:
+                print(f"No remote models available on {api.url}")
+                sys.exit(0)
+            print(f"Models available on remote server {api.url}:")
+        else:
+            models = available_models()
+
+        for p in sorted(models):
             print(p)
         sys.exit(0)
 
