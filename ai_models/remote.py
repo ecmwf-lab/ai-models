@@ -50,6 +50,10 @@ class RemoteModel(Model):
     def parse_model_args(self, args):
         return None
 
+    def patch_retrieve_request(self, request):
+        patched = self.api.patch_retrieve_request(self.cfg, request)
+        request.update(patched)
+
     def load_parameters(self):
         params = self.api.metadata(
             self.model,
@@ -220,6 +224,14 @@ class RemoteAPI:
             return []
 
         return results
+
+    def patch_retrieve_request(self, cfg, request):
+        cfg["patchrequest"] = request
+        result = self._request(requests.post, "patch", json=cfg)
+        if status := result.get("status"):
+            LOG.error(status)
+            sys.exit(1)
+        return result
 
     def _request(self, type, href, data=None, json=None, auth=None):
         response = robust(type, retry_after=30)(
