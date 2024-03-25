@@ -49,6 +49,7 @@ setuptools.setup(
         "gputil",
         "earthkit-meteo",
         "pyyaml",
+        "tqdm",
     ],
     extras_require={
         "provenance": [

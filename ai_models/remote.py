@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 import climetlab as cml
 import requests
 from multiurl import download, robust
+from tqdm import tqdm
 
 from .model import Model
 
@@ -187,21 +188,42 @@ class RemoteAPI:
         LOG.info("Request is queued")
 
         last_status = data["status"]
+        pbar = None
 
         while True:
             data = self._request(requests.get, data["href"])
+
+            if data["status"] == "ready":
+                if pbar is not None:
+                    pbar.close()
+                LOG.info("Request is ready")
+                break
+
+            if data["status"] == "failed":
+                LOG.error("Request failed")
+                if reason := data.get("reason"):
+                    LOG.error(reason)
+                sys.exit(1)
 
             if data["status"] != last_status:
                 LOG.info("Request is %s", data["status"])
                 last_status = data["status"]
 
-            if data["status"] == "failed":
-                if reason := data.get("reason"):
-                    LOG.error(reason)
-                sys.exit(1)
-
-            if data["status"] == "ready":
-                break
+            if progress := data.get("progress"):
+                if pbar is None:
+                    pbar = tqdm(
+                        total=progress.get("total", 0),
+                        unit="steps",
+                        ncols=70,
+                        leave=False,
+                        initial=1,
+                        bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {unit}{postfix}",
+                    )
+                if eta := progress.get("eta"):
+                    pbar.set_postfix_str(f"ETA: {eta}")
+                if status := progress.get("status"):
+                    pbar.set_description(status.strip().capitalize())
+                pbar.update(progress.get("step", 0) - pbar.n)
 
             time.sleep(5)
 
