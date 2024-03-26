@@ -138,16 +138,17 @@ class RemoteAPI:
             with open(configfile, "r") as f:
                 config = safe_load(f) or {}
 
-                url = config.get("url", None)
-                token = config.get("token", None)
+        url = (
+            url
+            or os.getenv("AI_MODELS_REMOTE_URL")
+            or config.get("url")
+            or "https://ai-models.ecmwf.int"
+        )
+        LOG.info("Using remote server %s", url)
 
-        if url is None:
-            url = os.getenv("AI_MODELS_REMOTE_URL", "https://ai-models.ecmwf.int")
-            LOG.info("Using remote server %s", url)
+        token = token or os.getenv("AI_MODELS_REMOTE_TOKEN") or config.get("token")
 
-        token = token or os.getenv("AI_MODELS_REMOTE_TOKEN", None)
-
-        if token is None:
+        if not token:
             LOG.error(
                 "Missing remote token. Set it in %s or in env AI_MODELS_REMOTE_TOKEN",
                 configfile,
