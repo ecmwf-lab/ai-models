@@ -8,6 +8,8 @@ import requests
 from multiurl import download, robust
 from tqdm import tqdm
 
+from .config import API_URL, CONFIG_PATH, load_config
+
 LOG = logging.getLogger(__name__)
 
 
@@ -28,37 +30,23 @@ class RemoteAPI:
         url: str = None,
         token: str = None,
     ):
-        root = os.path.join(os.path.expanduser("~"), ".config", "ai-models")
-        os.makedirs(root, exist_ok=True)
+        config = load_config()
 
-        configfile = os.path.join(root, "api.yaml")
-
-        if os.path.exists(configfile):
-            from yaml import safe_load
-
-            with open(configfile, "r") as f:
-                config = safe_load(f) or {}
-
-        url = (
-            url
-            or os.getenv("AI_MODELS_REMOTE_URL")
-            or config.get("url")
-            or "https://ai-models.ecmwf.int"
+        self.url = (
+            url or os.getenv("AI_MODELS_REMOTE_URL") or config.get("url") or API_URL
         )
-        LOG.info("Using remote server %s", url)
+        self.token = token or os.getenv("AI_MODELS_REMOTE_TOKEN") or config.get("token")
 
-        token = token or os.getenv("AI_MODELS_REMOTE_TOKEN") or config.get("token")
-
-        if not token:
+        if not self.token:
             LOG.error(
-                "Missing remote token. Set it in %s or in env AI_MODELS_REMOTE_TOKEN",
-                configfile,
+                "Missing remote token. Set it in %s or env AI_MODELS_REMOTE_TOKEN",
+                CONFIG_PATH,
             )
             sys.exit(1)
 
-        self.url = url
-        self.token = token
-        self.auth = BearerAuth(token)
+        LOG.info("Using remote server %s", self.url)
+
+        self.auth = BearerAuth(self.token)
         self.output_file = output_file
         self.input_file = input_file
         self._timeout = 300
