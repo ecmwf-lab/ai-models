@@ -14,6 +14,8 @@ import os
 
 import setuptools
 
+from ai_models.remote.config import config_exists, create_config
+
 
 def read(fname):
     file_path = os.path.join(os.path.dirname(__file__), fname)
@@ -27,6 +29,9 @@ for line in read("ai_models/__init__.py").split("\n"):
 
 
 assert version
+
+if not config_exists():
+    create_config()
 
 
 setuptools.setup(
