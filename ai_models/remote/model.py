@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 import tempfile
 from functools import cached_property
 
@@ -6,6 +8,8 @@ import climetlab as cml
 
 from ..model import Model
 from .api import RemoteAPI
+
+LOG = logging.getLogger(__name__)
 
 
 class RemoteModel(Model):
@@ -17,6 +21,13 @@ class RemoteModel(Model):
         self.model = self.cfg["model"]
         self._param = {}
         self.api = RemoteAPI()
+
+        if self.model not in self.api.models():
+            LOG.error(f"Model '{self.model}' not available on remote server.")
+            LOG.error(
+                "Rerun the command with --models --remote to list available remote models."
+            )
+            sys.exit(1)
 
         self.load_parameters()
 

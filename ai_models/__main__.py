@@ -216,7 +216,7 @@ def _main(argv):
         parser.add_argument(
             "model",
             metavar="MODEL",
-            choices=available_models(),
+            choices=available_models() if "--remote" not in argv else None,
             help="The model to run",
         )
 
