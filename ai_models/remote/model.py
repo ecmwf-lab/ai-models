@@ -77,12 +77,12 @@ class RemoteModel(Model):
         self._param.update(params)
 
     def get_parameter(self, name):
-        if (param := self._param.get(name, None)) is not None:
+        if (param := self._param.get(name)) is not None:
             return param
 
         self._param.update(self.api.metadata(self.model, name))
 
-        return self._param[name]
+        return self._param.get(name)
 
     @cached_property
     def param_level_ml(self):
