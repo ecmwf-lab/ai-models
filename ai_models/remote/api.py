@@ -35,6 +35,9 @@ class RemoteAPI:
         self.url = (
             url or os.getenv("AI_MODELS_REMOTE_URL") or config.get("url") or API_URL
         )
+        if not self.url.endswith("/"):
+            self.url += "/"
+
         self.token = token or os.getenv("AI_MODELS_REMOTE_TOKEN") or config.get("token")
 
         if not self.token:
@@ -66,7 +69,7 @@ class RemoteAPI:
         # submit task
         data = self._request(requests.post, data["href"], json=cfg)
 
-        LOG.info("Request submitted")
+        LOG.info("Inference request submitted")
 
         if data["status"] != "queued":
             LOG.error(data["status"])

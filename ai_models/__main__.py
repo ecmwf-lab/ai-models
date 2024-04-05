@@ -239,7 +239,7 @@ def _main(argv):
             if len(models) == 0:
                 print(f"No remote models available on {api.url}")
                 sys.exit(0)
-            print(f"Models available on remote server {api.url}:")
+            print(f"Models available on remote server {api.url}")
         else:
             models = available_models()
 
