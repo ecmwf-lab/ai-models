@@ -56,6 +56,9 @@ class RemoteModel(Model):
         return None
 
     def patch_retrieve_request(self, request):
+        if not self.remote_has_patch:
+            return
+
         patched = self.api.patch_retrieve_request(self.cfg, request)
         request.update(patched)
 
@@ -74,6 +77,7 @@ class RemoteModel(Model):
                 "lagged",
                 "grib_extra_metadata",
                 "retrieve",
+                "remote_has_patch",  # this is a custom parameter that checks if the remote model implemented patch_retrieve_request
             ],
         )
         self._param.update(params)
