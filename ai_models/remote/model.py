@@ -16,7 +16,6 @@ class RemoteModel(Model):
     def __init__(self, **kwargs):
         self.cfg = kwargs
         self.cfg["download_assets"] = False
-        self.cfg["assets_extra_dir"] = None
 
         self.model = self.cfg["model"]
         self.model_version = self.cfg.get("model_version", "latest")
@@ -77,7 +76,7 @@ class RemoteModel(Model):
                 "lagged",
                 "grib_extra_metadata",
                 "retrieve",
-                "remote_has_patch",  # this is a custom parameter that checks if the remote model implemented patch_retrieve_request
+                "remote_has_patch",  # custom parameter, checks if remote model need patches
             ],
         )
         self._param.update(params)
