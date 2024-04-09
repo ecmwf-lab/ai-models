@@ -124,11 +124,15 @@ class RemoteAPI:
 
         LOG.debug("Result written to %s", self.output_file)
 
-    def metadata(self, model, param) -> dict:
+    def metadata(self, model, model_version, param) -> dict:
         if isinstance(param, str):
-            return self._request(requests.get, f"metadata/{model}/{param}")
+            return self._request(
+                requests.get, f"metadata/{model}/{model_version}/{param}"
+            )
         elif isinstance(param, (list, dict)):
-            return self._request(requests.post, f"metadata/{model}", json=param)
+            return self._request(
+                requests.post, f"metadata/{model}/{model_version}", json=param
+            )
         else:
             raise ValueError("param must be a string, list, or dict with 'param' key.")
 

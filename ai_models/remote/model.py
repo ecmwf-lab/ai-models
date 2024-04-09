@@ -19,6 +19,7 @@ class RemoteModel(Model):
         self.cfg["assets_extra_dir"] = None
 
         self.model = self.cfg["model"]
+        self.model_version = self.cfg.get("model_version", "latest")
         self._param = {}
         self.api = RemoteAPI()
 
@@ -61,6 +62,7 @@ class RemoteModel(Model):
     def load_parameters(self):
         params = self.api.metadata(
             self.model,
+            self.model_version,
             [
                 "expver",
                 "version",
@@ -80,7 +82,8 @@ class RemoteModel(Model):
         if (param := self._param.get(name)) is not None:
             return param
 
-        self._param.update(self.api.metadata(self.model, name))
+        _param = self.api.metadata(self.model, self.model_version, name)
+        self._param.update(_param)
 
         return self._param.get(name)
 
