@@ -13,8 +13,7 @@ import io
 import os
 
 import setuptools
-
-from ai_models.remote.config import config_exists, create_config
+from setuptools.command.install import install
 
 
 def read(fname):
@@ -30,8 +29,15 @@ for line in read("ai_models/__init__.py").split("\n"):
 
 assert version
 
-if not config_exists():
-    create_config()
+
+class PostInstall(install):
+    def run(self):
+        from ai_models.remote.config import config_exists, create_config
+
+        if not config_exists():
+            create_config()
+
+        install.run(self)
 
 
 setuptools.setup(
@@ -46,6 +52,9 @@ setuptools.setup(
     url="https://github.com/ecmwf-lab/ai-models",
     packages=setuptools.find_packages(),
     include_package_data=True,
+    cmdclass={
+        "install": PostInstall,
+    },
     install_requires=[
         "entrypoints",
         "climetlab>=0.20.11",
