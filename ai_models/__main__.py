@@ -216,7 +216,7 @@ def _main(argv):
         parser.add_argument(
             "model",
             metavar="MODEL",
-            choices=available_models(),
+            choices=available_models() if "--remote" not in argv else None,
             help="The model to run",
         )
 
@@ -231,7 +231,19 @@ def _main(argv):
     args, unknownargs = parser.parse_known_args(argv)
 
     if args.models:
-        for p in sorted(available_models()):
+        if args.remote_execution:
+            from .remote import RemoteAPI
+
+            api = RemoteAPI()
+            models = api.models()
+            if len(models) == 0:
+                print(f"No remote models available on {api.url}")
+                sys.exit(0)
+            print(f"Models available on remote server {api.url}")
+        else:
+            models = available_models()
+
+        for p in sorted(models):
             print(p)
         sys.exit(0)
 
@@ -271,7 +283,12 @@ def _main(argv):
 
 
 def run(cfg: dict, model_args: list):
-    model = load_model(cfg["model"], **cfg, model_args=model_args)
+    if cfg["remote_execution"]:
+        from .remote import RemoteModel
+
+        model = RemoteModel(**cfg, model_args=model_args)
+    else:
+        model = load_model(cfg["model"], **cfg, model_args=model_args)
 
     if cfg["fields"]:
         model.print_fields()
@@ -289,10 +306,7 @@ def run(cfg: dict, model_args: list):
         sys.exit(0)
 
     try:
-        if cfg["remote_execution"]:
-            model.remote(cfg, model_args)
-        else:
-            model.run()
+        model.run()
     except FileNotFoundError as e:
         LOG.exception(e)
         LOG.error(

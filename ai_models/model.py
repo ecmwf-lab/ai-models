@@ -10,7 +10,6 @@ import json
 import logging
 import os
 import sys
-import tempfile
 import time
 from collections import defaultdict
 from functools import cached_property
@@ -24,7 +23,6 @@ from multiurl import download
 from .checkpoint import peek
 from .inputs import get_input
 from .outputs import get_output
-from .remote import RemoteClient
 from .stepper import Stepper
 
 LOG = logging.getLogger(__name__)
@@ -457,23 +455,6 @@ class Model:
                         time=int(self.start_datetime.strftime("%H%M")),
                         check=True,
                     )
-
-    def remote(self, cfg: dict, model_args: list):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            input_file = os.path.join(tmpdirname, "input.grib")
-            output_file = os.path.join(tmpdirname, "output.grib")
-            self.all_fields.save(input_file)
-
-            client = RemoteClient(
-                input_file=input_file,
-                output_file=output_file,
-            )
-
-            client.run(cfg, model_args)
-
-            ds = cml.load_source("file", output_file)
-            for field in ds:
-                self.write(None, template=field)
 
 
 def load_model(name, **kwargs):
