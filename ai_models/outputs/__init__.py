@@ -47,19 +47,21 @@ class FileOutput:
         )
 
     def write(self, data, *args, check=False, **kwargs):
+
         try:
             handle, path = self.output.write(data, *args, **kwargs)
 
         except Exception:
-            if np.isnan(data).any():
-                raise ValueError(
-                    f"NaN values found in field. args={args} kwargs={kwargs}"
-                )
-            if np.isinf(data).any():
-                raise ValueError(
-                    f"Infinite values found in field. args={args} kwargs={kwargs}"
-                )
-            raise
+            if data is not None:
+                if np.isnan(data).any():
+                    raise ValueError(
+                        f"NaN values found in field. args={args} kwargs={kwargs}"
+                    )
+                if np.isinf(data).any():
+                    raise ValueError(
+                        f"Infinite values found in field. args={args} kwargs={kwargs}"
+                    )
+                raise
 
         if check:
             # Check that the GRIB keys are as expected
@@ -88,13 +90,13 @@ class HindcastReLabel:
     def write(self, *args, **kwargs):
         if "hdate" in kwargs:
             warnings.warn(
-                f"Ignoring hdate='{kwargs['hdate']}' in write call", stacklevel=3
+                f"Ignoring hdate='{kwargs['hdate']}' in HindcastReLabel", stacklevel=3
             )
             kwargs.pop("hdate")
 
         if "date" in kwargs:
             warnings.warn(
-                f"Ignoring date='{kwargs['date']}' in write call", stacklevel=3
+                f"Ignoring date='{kwargs['date']}' in HindcastReLabel", stacklevel=3
             )
             kwargs.pop("date")
 
