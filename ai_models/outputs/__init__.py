@@ -7,6 +7,7 @@
 
 import itertools
 import logging
+import warnings
 from functools import cached_property
 
 import climetlab as cml
@@ -85,8 +86,17 @@ class HindcastReLabel:
         self.hindcast_reference_year = int(hindcast_reference_year)
 
     def write(self, *args, **kwargs):
-        assert "hdate" not in kwargs, kwargs
-        assert "date" not in kwargs, kwargs
+        if "hdate" in kwargs:
+            warnings.warn(
+                f"Ignoring hdate='{kwargs['hdate']}' in write call", stacklevel=3
+            )
+            kwargs.pop("hdate")
+
+        if "date" in kwargs:
+            warnings.warn(
+                f"Ignoring date='{kwargs['date']}' in write call", stacklevel=3
+            )
+            kwargs.pop("date")
 
         date = kwargs["template"]["date"]
         hdate = kwargs["template"]["hdate"]
@@ -107,7 +117,9 @@ class HindcastReLabel:
             kwargs["referenceDate"] = referenceDate
             kwargs["hdate"] = date
 
-        return self.output.write(*args, check=True, **kwargs)
+        kwargs.setdefault("check", True)
+
+        return self.output.write(*args, **kwargs)
 
 
 class NoneOutput:
