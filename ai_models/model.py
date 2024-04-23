@@ -135,11 +135,34 @@ class Model:
     def finalise(self):
         if self.archive_requests:
             with open(self.archive_requests, "w") as f:
+                json_requests = []
+
                 for path, archive in self.archiving.items():
                     request = dict(source=f'"{path}"', expect=archive.expect)
                     request.update(archive.request)
                     request.update(self._requests_extra)
-                    self._print_request("archive", request, file=f)
+
+                    if self.json:
+                        json_requests.append(request)
+                    else:
+                        self._print_request("archive", request, file=f)
+
+                if json_requests:
+
+                    def json_default(obj):
+                        if isinstance(obj, set):
+                            if len(obj) > 1:
+                                return list(obj)
+                            else:
+                                return obj.pop()
+                        return obj
+
+                    print(
+                        json.dumps(
+                            json_requests, separators=(",", ":"), default=json_default
+                        ),
+                        file=f,
+                    )
 
     def download_assets(self, **kwargs):
         for file in self.download_files:
