@@ -125,7 +125,7 @@ class Model:
     def collect_archive_requests(self, written):
         if self.archive_requests:
             handle, path = written
-            if self.hindcast_reference_year:
+            if self.hindcast_reference_year or self.hindcast_reference_date:
                 # The clone is necessary because the handle
                 # does not return always return recently set keys
                 handle = handle.clone()
@@ -333,7 +333,7 @@ class Model:
         for r in requests:
             self._print_request("retrieve", r)
 
-    def _requests(self):
+    def _requests_unfiltered(self):
         result = []
 
         first = dict(
@@ -375,6 +375,55 @@ class Model:
 
         return result
 
+    def _requests(self):
+
+        def filter_constant(request):
+            # We check for 'sfc' because param 'z' can be ambiguous
+            if request.get("levtype") == "sfc":
+                param = set(self.constant_fields) & set(request.get("param", []))
+                if param:
+                    request["param"] = list(param)
+                    return True
+
+            return False
+
+        def filter_prognostic(request):
+            # TODO: We assume here that prognostic fields are
+            # the ones that are not constant. This may not always be true
+            if request.get("levtype") == "sfc":
+                param = set(request.get("param", [])) - set(self.constant_fields)
+                if param:
+                    request["param"] = list(param)
+                    return True
+                return False
+
+            return True
+
+        def filter_last_date(request):
+            date, time = max(self.datetimes())
+            return request["date"] == date and request["time"] == time
+
+        def noop(request):
+            return request
+
+        filter_type = {
+            "constants": filter_constant,
+            "prognostics": filter_prognostic,
+            "all": noop,
+        }[self.retrieve_fields_type]
+
+        filter_dates = {
+            True: filter_last_date,
+            False: noop,
+        }[self.retrieve_only_one_date]
+
+        result = []
+        for r in self._requests_unfiltered():
+            if filter_type(r) and filter_dates(r):
+                result.append(r)
+
+        return result
+
     def patch_retrieve_request(self, request):
         # Overriden in subclasses if needed
         pass
@@ -412,6 +461,10 @@ class Model:
     @cached_property
     def start_datetime(self):
         return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()
+
+    @property
+    def constant_fields(self):
+        raise NotImplementedError("constant_fields")
 
     def write_input_fields(
         self,

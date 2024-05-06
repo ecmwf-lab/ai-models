@@ -76,6 +76,19 @@ def _main(argv):
     )
 
     parser.add_argument(
+        "--retrieve-fields-type",
+        help="Type of field to retrieve. To use with --retrieve-requests.",
+        choices=["constants", "prognostics", "all"],
+        default="all",
+    )
+
+    parser.add_argument(
+        "--retrieve-only-one-date",
+        help="Only retrieve the last date/time. To use with --retrieve-requests.",
+        action="store_true",
+    )
+
+    parser.add_argument(
         "--dump-provenance",
         metavar="FILE",
         help=("Dump information for tracking provenance."),
@@ -185,6 +198,11 @@ def _main(argv):
 
     parser.add_argument(
         "--hindcast-reference-year",
+        help="For encoding hincast-like outputs",
+    )
+
+    parser.add_argument(
+        "--hindcast-reference-date",
         help="For encoding hincast-like outputs",
     )
 
