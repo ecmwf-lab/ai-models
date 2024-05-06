@@ -1,0 +1,69 @@
+repos:
+
+# Empty notebookds
+- repo: local
+  hooks:
+    - id: clear-notebooks-output
+      name: clear-notebooks-output
+      files: tools/.*\.ipynb$
+      stages: [commit]
+      language: python
+      entry: jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace
+      additional_dependencies: [jupyter]
+
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: check-yaml # Check YAML files for syntax errors only
+    args: [--unsafe, --allow-multiple-documents]
+  - id: debug-statements # Check for debugger imports and py37+ breakpoint()
+  - id: end-of-file-fixer # Ensure files end in a newline
+  - id: trailing-whitespace # Trailing whitespace checker
+  - id: no-commit-to-branch # Prevent committing to main / master
+  - id: check-added-large-files # Check for large files added to git
+  - id: check-merge-conflict # Check for files that contain merge conflict
+
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 24.1.1
+  hooks:
+    - id: black
+      args: [--line-length=120]
+
+- repo: https://github.com/pycqa/isort
+  rev: 5.13.2
+  hooks:
+  - id: isort
+    args:
+    - -l 120
+    - --force-single-line-imports
+    - --profile black
+
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.3.0
+  hooks:
+  - id: ruff
+    exclude: '(dev/.*|.*_)\.py$'
+    args:
+    - --line-length=120
+    - --fix
+    - --exit-non-zero-on-fix
+    - --preview
+
+- repo: https://github.com/sphinx-contrib/sphinx-lint
+  rev: v0.9.1
+  hooks:
+    - id: sphinx-lint
+
+# For now, we use it. But it does not support a lot of sphinx features
+- repo: https://github.com/dzhu/rstfmt
+  rev: v0.0.14
+  hooks:
+    - id: rstfmt
+
+- repo: https://github.com/b8raoult/pre-commit-docconvert
+  rev: "0.1.4"
+  hooks:
+  - id: docconvert
+    args: ["numpy"]

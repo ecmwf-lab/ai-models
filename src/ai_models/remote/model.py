@@ -24,9 +24,7 @@ class RemoteModel(Model):
 
         if self.model not in self.api.models():
             LOG.error(f"Model '{self.model}' not available on remote server.")
-            LOG.error(
-                "Rerun the command with --models --remote to list available remote models."
-            )
+            LOG.error("Rerun the command with --models --remote to list available remote models.")
             sys.exit(1)
 
         self.load_parameters()

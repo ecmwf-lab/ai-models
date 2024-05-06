@@ -12,7 +12,9 @@ import shlex
 import sys
 
 from .inputs import available_inputs
-from .model import Timer, available_models, load_model
+from .model import Timer
+from .model import available_models
+from .model import load_model
 from .outputs import available_outputs
 
 LOG = logging.getLogger(__name__)
@@ -46,27 +48,19 @@ def _main(argv):
 
     parser.add_argument(
         "--retrieve-requests",
-        help=(
-            "Print mars requests to stdout."
-            "Use --requests-extra to extend or overide the requests. "
-        ),
+        help=("Print mars requests to stdout." "Use --requests-extra to extend or overide the requests. "),
         action="store_true",
     )
 
     parser.add_argument(
         "--archive-requests",
-        help=(
-            "Save mars archive requests to FILE."
-            "Use --requests-extra to extend or overide the requests. "
-        ),
+        help=("Save mars archive requests to FILE." "Use --requests-extra to extend or overide the requests. "),
         metavar="FILE",
     )
 
     parser.add_argument(
         "--requests-extra",
-        help=(
-            "Extends the retrieve or archive requests with a list of key1=value1,key2=value."
-        ),
+        help=("Extends the retrieve or archive requests with a list of key1=value1,key2=value."),
     )
 
     parser.add_argument(
@@ -293,9 +287,7 @@ def _main(argv):
 
     if args.requests_extra:
         if not args.retrieve_requests and not args.archive_requests:
-            parser.error(
-                "You need to specify --retrieve-requests or --archive-requests"
-            )
+            parser.error("You need to specify --retrieve-requests or --archive-requests")
 
     run(vars(args), unknownargs)
 
@@ -313,9 +305,7 @@ def run(cfg: dict, model_args: list):
         sys.exit(0)
 
     # This logic is a bit convoluted, but it is for backwards compatibility.
-    if cfg["retrieve_requests"] or (
-        cfg["requests_extra"] and not cfg["archive_requests"]
-    ):
+    if cfg["retrieve_requests"] or (cfg["requests_extra"] and not cfg["archive_requests"]):
         model.print_requests()
         sys.exit(0)
 

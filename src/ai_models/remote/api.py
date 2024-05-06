@@ -5,10 +5,13 @@ import time
 from urllib.parse import urljoin
 
 import requests
-from multiurl import download, robust
+from multiurl import download
+from multiurl import robust
 from tqdm import tqdm
 
-from .config import API_URL, CONFIG_PATH, load_config
+from .config import API_URL
+from .config import CONFIG_PATH
+from .config import load_config
 
 LOG = logging.getLogger(__name__)
 
@@ -32,9 +35,7 @@ class RemoteAPI:
     ):
         config = load_config()
 
-        self.url = (
-            url or os.getenv("AI_MODELS_REMOTE_URL") or config.get("url") or API_URL
-        )
+        self.url = url or os.getenv("AI_MODELS_REMOTE_URL") or config.get("url") or API_URL
         if not self.url.endswith("/"):
             self.url += "/"
 
@@ -126,13 +127,9 @@ class RemoteAPI:
 
     def metadata(self, model, model_version, param) -> dict:
         if isinstance(param, str):
-            return self._request(
-                requests.get, f"metadata/{model}/{model_version}/{param}"
-            )
+            return self._request(requests.get, f"metadata/{model}/{model_version}/{param}")
         elif isinstance(param, (list, dict)):
-            return self._request(
-                requests.post, f"metadata/{model}/{model_version}", json=param
-            )
+            return self._request(requests.post, f"metadata/{model}/{model_version}", json=param)
         else:
             raise ValueError("param must be a string, list, or dict with 'param' key.")
 

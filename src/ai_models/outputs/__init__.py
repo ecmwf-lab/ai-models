@@ -54,13 +54,9 @@ class FileOutput:
         except Exception:
             if data is not None:
                 if np.isnan(data).any():
-                    raise ValueError(
-                        f"NaN values found in field. args={args} kwargs={kwargs}"
-                    )
+                    raise ValueError(f"NaN values found in field. args={args} kwargs={kwargs}")
                 if np.isinf(data).any():
-                    raise ValueError(
-                        f"Infinite values found in field. args={args} kwargs={kwargs}"
-                    )
+                    raise ValueError(f"Infinite values found in field. args={args} kwargs={kwargs}")
                 raise
 
         if check:
@@ -82,33 +78,20 @@ class FileOutput:
 
 
 class HindcastReLabel:
-    def __init__(
-        self, owner, output, hindcast_reference_year, hind_cast_reference_date, **kwargs
-    ):
+    def __init__(self, owner, output, hindcast_reference_year, hind_cast_reference_date, **kwargs):
         self.owner = owner
         self.output = output
-        self.hindcast_reference_year = (
-            int(hindcast_reference_year) if hindcast_reference_year else None
-        )
-        self.hind_cast_reference_date = (
-            int(hind_cast_reference_date) if hind_cast_reference_date else None
-        )
-        assert (
-            self.hindcast_reference_year is not None
-            or self.hind_cast_reference_date is not None
-        )
+        self.hindcast_reference_year = int(hindcast_reference_year) if hindcast_reference_year else None
+        self.hind_cast_reference_date = int(hind_cast_reference_date) if hind_cast_reference_date else None
+        assert self.hindcast_reference_year is not None or self.hind_cast_reference_date is not None
 
     def write(self, *args, **kwargs):
         if "hdate" in kwargs:
-            warnings.warn(
-                f"Ignoring hdate='{kwargs['hdate']}' in HindcastReLabel", stacklevel=3
-            )
+            warnings.warn(f"Ignoring hdate='{kwargs['hdate']}' in HindcastReLabel", stacklevel=3)
             kwargs.pop("hdate")
 
         if "date" in kwargs:
-            warnings.warn(
-                f"Ignoring date='{kwargs['date']}' in HindcastReLabel", stacklevel=3
-            )
+            warnings.warn(f"Ignoring date='{kwargs['date']}' in HindcastReLabel", stacklevel=3)
             kwargs.pop("date")
 
         date = kwargs["template"]["date"]
@@ -153,10 +136,7 @@ class NoneOutput:
 
 def get_output(name, owner, *args, **kwargs):
     result = available_outputs()[name].load()(owner, *args, **kwargs)
-    if (
-        kwargs.get("hindcast_reference_year") is not None
-        or kwargs.get("hindcast_reference_date") is not None
-    ):
+    if kwargs.get("hindcast_reference_year") is not None or kwargs.get("hindcast_reference_date") is not None:
         result = HindcastReLabel(owner, result, **kwargs)
     return result
 

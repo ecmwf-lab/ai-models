@@ -176,3 +176,4 @@ bar
 *.req
 dev/
 *.out
+_version.py

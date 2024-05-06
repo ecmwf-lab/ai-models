@@ -55,9 +55,7 @@ def peek(path):
         for b in f.namelist():
             if os.path.basename(b) == "data.pkl":
                 if data_pkl is not None:
-                    raise Exception(
-                        f"Found two data.pkl files in {path}: {data_pkl} and {b}"
-                    )
+                    raise Exception(f"Found two data.pkl files in {path}: {data_pkl} and {b}")
                 data_pkl = b
 
     LOG.info(f"Found data.pkl at {data_pkl}")

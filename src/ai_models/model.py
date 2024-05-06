@@ -54,9 +54,7 @@ class ArchiveCollector:
             self.request[k].add(str(v))
             if k in self.UNIQUE:
                 if len(self.request[k]) > 1:
-                    raise ValueError(
-                        f"Field {field} has different values for {k}: {self.request[k]}"
-                    )
+                    raise ValueError(f"Field {field} has different values for {k}: {self.request[k]}")
 
 
 class Model:
