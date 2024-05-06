@@ -58,7 +58,7 @@ Repository = "https://github.com/ecmwf/ai-models/"
 Issues = "https://github.com/ecmwf/ai-models/issues"
 
 [project.scripts]
-anemoi-datasets = "ai_models.__main__:main"
+ai-models = "ai_models.__main__:main"
 
 [tool.setuptools_scm]
 version_file = "src/ai_models/_version.py"
