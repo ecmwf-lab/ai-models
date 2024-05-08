@@ -156,9 +156,7 @@ class Model:
                         return obj
 
                     print(
-                        json.dumps(
-                            json_requests, separators=(",", ":"), default=json_default
-                        ),
+                        json.dumps(json_requests, separators=(",", ":"), default=json_default),
                         file=f,
                     )
 
