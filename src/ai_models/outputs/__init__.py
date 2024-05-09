@@ -78,12 +78,12 @@ class FileOutput:
 
 
 class HindcastReLabel:
-    def __init__(self, owner, output, hindcast_reference_year, hind_cast_reference_date, **kwargs):
+    def __init__(self, owner, output, hindcast_reference_year=None, hindcast_reference_date=None, **kwargs):
         self.owner = owner
         self.output = output
         self.hindcast_reference_year = int(hindcast_reference_year) if hindcast_reference_year else None
-        self.hind_cast_reference_date = int(hind_cast_reference_date) if hind_cast_reference_date else None
-        assert self.hindcast_reference_year is not None or self.hind_cast_reference_date is not None
+        self.hindcast_reference_date = int(hindcast_reference_date) if hindcast_reference_date else None
+        assert self.hindcast_reference_year is not None or self.hindcast_reference_date is not None
 
     def write(self, *args, **kwargs):
         if "hdate" in kwargs:
@@ -100,8 +100,8 @@ class HindcastReLabel:
         if hdate is not None:
             # Input was a hindcast
             referenceDate = (
-                self.hind_cast_reference_date
-                if self.hind_cast_reference_date is not None
+                self.hindcast_reference_date
+                if self.hindcast_reference_date is not None
                 else self.hindcast_reference_year * 10000 + date % 10000
             )
             assert date == referenceDate, (
@@ -114,8 +114,8 @@ class HindcastReLabel:
             kwargs["hdate"] = hdate
         else:
             referenceDate = (
-                self.hind_cast_reference_date
-                if self.hind_cast_reference_date is not None
+                self.hindcast_reference_date
+                if self.hindcast_reference_date is not None
                 else self.hindcast_reference_year * 10000 + date % 10000
             )
             kwargs["referenceDate"] = referenceDate
