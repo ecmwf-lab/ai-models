@@ -224,7 +224,13 @@ def _main(argv):
         help="Model version",
     )
 
-    if "--models" not in argv:
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Print ai-models version and exit",
+    )
+
+    if all(arg not in ("--models", "--version") for arg in argv):
         parser.add_argument(
             "model",
             metavar="MODEL",
@@ -241,6 +247,14 @@ def _main(argv):
     )
 
     args, unknownargs = parser.parse_known_args(argv)
+
+    if args.version:
+        from ai_models import __version__
+
+        print(__version__)
+        sys.exit(0)
+
+    del args.version
 
     if args.models:
         if args.remote_execution:
