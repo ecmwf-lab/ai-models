@@ -326,7 +326,12 @@ class Model:
         for k, v in sorted(request.items()):
             if not isinstance(v, (list, tuple, set)):
                 v = [v]
-            v = [str(_) for _ in sorted(v)]
+
+            if k in ("area", "grid", "frame", "rotation", "bitmap"):
+                v = [str(_) for _ in v]
+            else:
+                v = [str(_) for _ in sorted(v)]
+
             v = "/".join(v)
             r.append(f"{k}={v}")
 
