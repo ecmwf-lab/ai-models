@@ -332,7 +332,7 @@ def run(cfg: dict, model_args: list):
     except FileNotFoundError as e:
         LOG.exception(e)
         LOG.error(
-            "It is possible that some files requited by %s are missing.",
+            "It is possible that some files required by %s are missing.",
             cfg["model"],
         )
         LOG.error("Rerun the command as:")

@@ -57,12 +57,18 @@ class FileOutput:
                     raise ValueError(f"NaN values found in field. args={args} kwargs={kwargs}")
                 if np.isinf(data).any():
                     raise ValueError(f"Infinite values found in field. args={args} kwargs={kwargs}")
-                raise
+            raise
 
         if check:
             # Check that the GRIB keys are as expected
+
+            if kwargs.get("expver") is None:
+                ignore = ("template", "expver", "class", "type", "stream")
+            else:
+                ignore = ("template",)
+
             for key, value in itertools.chain(self.grib_keys.items(), kwargs.items()):
-                if key in ("template",):
+                if key in ignore:
                     continue
 
                 # If "param" is a string, we what to compare it to the shortName
@@ -126,6 +132,17 @@ class HindcastReLabel:
         return self.output.write(*args, **kwargs)
 
 
+class NoLabelling:
+
+    def __init__(self, owner, output, **kwargs):
+        self.owner = owner
+        self.output = output
+
+    def write(self, *args, **kwargs):
+        kwargs["deleteLocalDefinition"] = 1
+        return self.output.write(*args, **kwargs)
+
+
 class NoneOutput:
     def __init__(self, *args, **kwargs):
         LOG.info("Results will not be written.")
@@ -138,6 +155,8 @@ def get_output(name, owner, *args, **kwargs):
     result = available_outputs()[name].load()(owner, *args, **kwargs)
     if kwargs.get("hindcast_reference_year") is not None or kwargs.get("hindcast_reference_date") is not None:
         result = HindcastReLabel(owner, result, **kwargs)
+    if owner.expver is None:
+        result = NoLabelling(owner, result, **kwargs)
     return result
 
 
