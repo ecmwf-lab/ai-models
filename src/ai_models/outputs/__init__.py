@@ -17,7 +17,15 @@ import numpy as np
 LOG = logging.getLogger(__name__)
 
 
-class FileOutput:
+class Output:
+    def write(self, *args, **kwargs):
+        pass
+
+    def finalise(self, *args, **kwargs):
+        pass
+
+
+class FileOutput(Output):
     def __init__(self, owner, path, metadata, **kwargs):
         self._first = True
         metadata.setdefault("stream", "oper")
@@ -143,7 +151,7 @@ class NoLabelling:
         return self.output.write(*args, **kwargs)
 
 
-class NoneOutput:
+class NoneOutput(Output):
     def __init__(self, *args, **kwargs):
         LOG.info("Results will not be written.")
 
