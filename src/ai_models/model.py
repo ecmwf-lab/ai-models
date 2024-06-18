@@ -136,7 +136,9 @@ class Model:
                 json_requests = []
 
                 for path, archive in self.archiving.items():
-                    request = dict(source=f'"{path}"', expect=archive.expect)
+                    request = dict(expect=archive.expect)
+                    if path is not None:
+                        request["source"] = f'"{path}"'
                     request.update(archive.request)
                     request.update(self._requests_extra)
 
