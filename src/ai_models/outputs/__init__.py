@@ -25,29 +25,31 @@ class Output:
         pass
 
 
-class FileOutput(Output):
+class FileOutputBase(Output):
     def __init__(self, owner, path, metadata, **kwargs):
         self._first = True
         metadata.setdefault("stream", "oper")
         metadata.setdefault("expver", owner.expver)
         metadata.setdefault("class", "ml")
 
-        LOG.info("Writing results to %s.", path)
         self.path = path
         self.owner = owner
         self.metadata = metadata
 
     @cached_property
-    def output(self):
-
+    def grib_keys(self):
         edition = self.metadata.pop("edition", 2)
 
-        self.grib_keys = dict(
+        _grib_keys = dict(
             edition=edition,
             generatingProcessIdentifier=self.owner.version,
         )
-        self.grib_keys.update(self.metadata)
+        _grib_keys.update(self.metadata)
 
+        return _grib_keys
+
+    @cached_property
+    def output(self):
         return cml.new_grib_output(
             self.path,
             split_output=True,
@@ -89,6 +91,20 @@ class FileOutput(Output):
                 assert str(handle.get(key)) == str(value), (key, handle.get(key), value)
 
         return handle, path
+
+
+class FileOutput(FileOutputBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        LOG.info("Writing results to %s", self.path)
+
+
+class NoneOutput(Output):
+    def __init__(self, *args, **kwargs):
+        LOG.info("Results will not be written.")
+
+    def write(self, *args, **kwargs):
+        pass
 
 
 class HindcastReLabel:
@@ -149,14 +165,6 @@ class NoLabelling:
     def write(self, *args, **kwargs):
         kwargs["deleteLocalDefinition"] = 1
         return self.output.write(*args, **kwargs)
-
-
-class NoneOutput(Output):
-    def __init__(self, *args, **kwargs):
-        LOG.info("Results will not be written.")
-
-    def write(self, *args, **kwargs):
-        pass
 
 
 def get_output(name, owner, *args, **kwargs):
