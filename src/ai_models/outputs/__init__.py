@@ -25,7 +25,7 @@ class Output:
         pass
 
 
-class FileOutputBase(Output):
+class GribOutputBase(Output):
     def __init__(self, owner, path, metadata, **kwargs):
         self._first = True
         metadata.setdefault("stream", "oper")
@@ -93,7 +93,7 @@ class FileOutputBase(Output):
         return handle, path
 
 
-class FileOutput(FileOutputBase):
+class FileOutput(GribOutputBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         LOG.info("Writing results to %s", self.path)
