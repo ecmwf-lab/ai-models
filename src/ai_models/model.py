@@ -131,6 +131,8 @@ class Model:
             self.archiving[path].add(handle.as_mars())
 
     def finalise(self):
+        self.output.finalise()
+
         if self.archive_requests:
             with open(self.archive_requests, "w") as f:
                 json_requests = []
