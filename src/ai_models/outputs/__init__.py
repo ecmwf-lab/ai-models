@@ -21,7 +21,7 @@ class Output:
     def write(self, *args, **kwargs):
         pass
 
-    def finalise(self, *args, **kwargs):
+    def flush(self, *args, **kwargs):
         pass
 
 
