@@ -73,9 +73,9 @@ class GribOutputBase(Output):
             # Check that the GRIB keys are as expected
 
             if kwargs.get("expver") is None:
-                ignore = ("template", "expver", "class", "type", "stream")
+                ignore = ("template", "check_nans", "expver", "class", "type", "stream")
             else:
-                ignore = ("template",)
+                ignore = ("template", "check_nans")
 
             for key, value in itertools.chain(self.grib_keys.items(), kwargs.items()):
                 if key in ignore:
@@ -155,6 +155,9 @@ class HindcastReLabel:
 
         return self.output.write(*args, **kwargs)
 
+    def flush(self, *args, **kwargs):
+        return self.output.flush(*args, **kwargs)
+
 
 class NoLabelling:
 
@@ -165,6 +168,9 @@ class NoLabelling:
     def write(self, *args, **kwargs):
         kwargs["deleteLocalDefinition"] = 1
         return self.output.write(*args, **kwargs)
+
+    def flush(self, *args, **kwargs):
+        return self.output.flush(*args, **kwargs)
 
 
 def get_output(name, owner, *args, **kwargs):
