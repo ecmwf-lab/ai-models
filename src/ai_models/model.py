@@ -374,6 +374,7 @@ class Model:
         for date, time in self.datetimes():  # noqa F402
             param, level = self.param_level_pl
 
+            # PL
             r = dict(
                 levtype="pl",
                 levelist=level,
@@ -390,6 +391,25 @@ class Model:
 
             result.append(dict(**r))
 
+            # ML
+            param, level = self.param_level_ml
+            r = dict(
+                levtype="ml",
+                levelist=level,
+                param=param,
+                date=date,
+                time=time,
+            )
+            r.update(first)
+            first = {}
+
+            r.update(self._requests_extra)
+
+            self.patch_retrieve_request(r)
+
+            result.append(dict(**r))
+
+            # SFC
             r.update(
                 dict(
                     levtype="sfc",
