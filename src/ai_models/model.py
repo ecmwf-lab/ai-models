@@ -154,13 +154,13 @@ class Model:
                     def json_default(obj):
                         if isinstance(obj, set):
                             if len(obj) > 1:
-                                return list(obj)
+                                return sorted(list(obj))
                             else:
                                 return obj.pop()
-                        return obj
+                        raise TypeError
 
                     print(
-                        json.dumps(json_requests, separators=(",", ":"), default=json_default),
+                        json.dumps(json_requests, separators=(",", ":"), default=json_default, sort_keys=True),
                         file=f,
                     )
 
