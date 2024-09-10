@@ -11,11 +11,15 @@ import os
 import shlex
 import sys
 
+import earthkit.data as ekd
+
 from .inputs import available_inputs
 from .model import Timer
 from .model import available_models
 from .model import load_model
 from .outputs import available_outputs
+
+ekd.settings.set("cache-policy", "user")
 
 LOG = logging.getLogger(__name__)
 
