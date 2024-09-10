@@ -523,7 +523,7 @@ class Model:
 
     @cached_property
     def start_datetime(self):
-        return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()
+        return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()["valid_time"]
 
     @property
     def constant_fields(self):
@@ -545,7 +545,7 @@ class Model:
                 if field.metadata("shortName") in ignore:
                     continue
 
-                if field.valid_datetime() == self.start_datetime:
+                if field.datetime()["valid_time"] == self.start_datetime:
                     self.write(
                         None,
                         template=field,
