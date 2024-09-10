@@ -42,9 +42,9 @@ classifiers = [
 dependencies = [
     "entrypoints",
     "requests",
-    "climetlab>=0.23.0",
+    "earthkit-data>=0.10.1",
+    "eccodes>=2.37",
     "multiurl",
-    "ecmwflibs>=0.6.1",
     "gputil",
     "earthkit-meteo",
     "pyyaml",
