@@ -8,7 +8,7 @@
 import logging
 from functools import cached_property
 
-import climetlab as cml
+import earthkit.data as ekd
 import entrypoints
 
 LOG = logging.getLogger(__name__)
@@ -27,10 +27,11 @@ class RequestBasedInput:
     def fields_sfc(self):
         param = self.owner.param_sfc
         if not param:
-            return cml.load_source("empty")
+            return ekd.from_source("empty")
 
         LOG.info(f"Loading surface fields from {self.WHERE}")
-        return cml.load_source(
+
+        return ekd.from_source(
             "multi",
             [
                 self.sfc_load_source(
@@ -51,10 +52,10 @@ class RequestBasedInput:
     def fields_pl(self):
         param, level = self.owner.param_level_pl
         if not (param and level):
-            return cml.load_source("empty")
+            return ekd.from_source("empty")
 
         LOG.info(f"Loading pressure fields from {self.WHERE}")
-        return cml.load_source(
+        return ekd.from_source(
             "multi",
             [
                 self.pl_load_source(
@@ -75,10 +76,10 @@ class RequestBasedInput:
     def fields_ml(self):
         param, level = self.owner.param_level_ml
         if not (param and level):
-            return cml.load_source("empty")
+            return ekd.from_source("empty")
 
         LOG.info(f"Loading model fields from {self.WHERE}")
-        return cml.load_source(
+        return ekd.from_source(
             "multi",
             [
                 self.ml_load_source(
@@ -109,17 +110,17 @@ class MarsInput(RequestBasedInput):
     def pl_load_source(self, **kwargs):
         kwargs["levtype"] = "pl"
         logging.debug("load source mars %s", kwargs)
-        return cml.load_source("mars", kwargs)
+        return ekd.from_source("mars", kwargs)
 
     def sfc_load_source(self, **kwargs):
         kwargs["levtype"] = "sfc"
         logging.debug("load source mars %s", kwargs)
-        return cml.load_source("mars", kwargs)
+        return ekd.from_source("mars", kwargs)
 
     def ml_load_source(self, **kwargs):
         kwargs["levtype"] = "ml"
         logging.debug("load source mars %s", kwargs)
-        return cml.load_source("mars", kwargs)
+        return ekd.from_source("mars", kwargs)
 
 
 class CdsInput(RequestBasedInput):
@@ -127,11 +128,11 @@ class CdsInput(RequestBasedInput):
 
     def pl_load_source(self, **kwargs):
         kwargs["product_type"] = "reanalysis"
-        return cml.load_source("cds", "reanalysis-era5-pressure-levels", kwargs)
+        return ekd.from_source("cds", "reanalysis-era5-pressure-levels", kwargs)
 
     def sfc_load_source(self, **kwargs):
         kwargs["product_type"] = "reanalysis"
-        return cml.load_source("cds", "reanalysis-era5-single-levels", kwargs)
+        return ekd.from_source("cds", "reanalysis-era5-single-levels", kwargs)
 
     def ml_load_source(self, **kwargs):
         raise NotImplementedError("CDS does not support model levels")
@@ -163,19 +164,19 @@ class OpenDataInput(RequestBasedInput):
         self._adjust(kwargs)
         kwargs["levtype"] = "pl"
         logging.debug("load source ecmwf-open-data %s", kwargs)
-        return cml.load_source("ecmwf-open-data", **kwargs)
+        return ekd.from_source("ecmwf-open-data", **kwargs)
 
     def sfc_load_source(self, **kwargs):
         self._adjust(kwargs)
         kwargs["levtype"] = "sfc"
         logging.debug("load source ecmwf-open-data %s", kwargs)
-        return cml.load_source("ecmwf-open-data", **kwargs)
+        return ekd.from_source("ecmwf-open-data", **kwargs)
 
     def ml_load_source(self, **kwargs):
         self._adjust(kwargs)
         kwargs["levtype"] = "ml"
         logging.debug("load source ecmwf-open-data %s", kwargs)
-        return cml.load_source("ecmwf-open-data", **kwargs)
+        return ekd.from_source("ecmwf-open-data", **kwargs)
 
 
 class FileInput:
@@ -197,7 +198,7 @@ class FileInput:
 
     @cached_property
     def all_fields(self):
-        return cml.load_source("file", self.file)
+        return ekd.from_source("file", self.file)
 
 
 def get_input(name, *args, **kwargs):

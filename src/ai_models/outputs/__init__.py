@@ -10,7 +10,7 @@ import logging
 import warnings
 from functools import cached_property
 
-import climetlab as cml
+import earthkit.data as ekd
 import entrypoints
 import numpy as np
 
@@ -50,7 +50,7 @@ class GribOutputBase(Output):
 
     @cached_property
     def output(self):
-        return cml.new_grib_output(
+        return ekd.new_grib_output(
             self.path,
             split_output=True,
             **self.grib_keys,

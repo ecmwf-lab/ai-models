@@ -14,10 +14,10 @@ import time
 from collections import defaultdict
 from functools import cached_property
 
-import climetlab as cml
+import earthkit.data as ekd
 import entrypoints
 import numpy as np
-from climetlab.utils.humanize import seconds
+from earthkit.data.utils.humanize import seconds
 from multiurl import download
 
 from .checkpoint import peek
@@ -506,8 +506,8 @@ class Model:
     def forcing_and_constants(self, date, param):
         source = self.all_fields[:1]
 
-        ds = cml.load_source(
-            "constants",
+        ds = ekd.from_source(
+            "forcings",
             source,
             date=date,
             param=param,

@@ -8,7 +8,7 @@
 import logging
 import time
 
-from climetlab.utils.humanize import seconds
+from earthkit.data.utils.humanize import seconds
 
 LOG = logging.getLogger(__name__)
 
