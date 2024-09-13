@@ -64,10 +64,10 @@ ai-models = "ai_models.__main__:main"
 version_file = "src/ai_models/_version.py"
 
 [project.entry-points."ai_models.input"]
-file = "ai_models.inputs:FileInput"
-mars = "ai_models.inputs:MarsInput"
-cds = "ai_models.inputs:CdsInput"
-opendata = "ai_models.inputs:OpenDataInput"
+file = "ai_models.inputs.file:FileInput"
+mars = "ai_models.inputs.mars:MarsInput"
+cds = "ai_models.inputs.cds:CdsInput"
+opendata = "ai_models.inputs.opendata:OpenDataInput"
 
 [project.entry-points."ai_models.output"]
 file = "ai_models.outputs:FileOutput"
