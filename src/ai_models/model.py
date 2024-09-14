@@ -88,7 +88,6 @@ class Model:
         LOG.debug("Asset directory is %s", self.assets)
 
         try:
-            # For CliMetLab, when date=-1
             self.date = int(self.date)
         except ValueError:
             pass
