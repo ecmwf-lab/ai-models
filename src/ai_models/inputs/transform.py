@@ -21,6 +21,8 @@ class NewDataField:
             data = data.astype(dtype)
         if flatten:
             data = data.flatten()
+        if index is not None:
+            data = data[index]
         return data
 
     def __getattr__(self, name):
