@@ -10,9 +10,20 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
-class NewDataField:
-    def __init__(self, field, data):
+class WrappedField:
+    def __init__(self, field):
         self._field = field
+
+    def __getattr__(self, name):
+        return getattr(self._field, name)
+
+    def __repr__(self) -> str:
+        return repr(self._field)
+
+
+class NewDataField(WrappedField):
+    def __init__(self, field, data):
+        super().__init__(field)
         self._data = data
 
     def to_numpy(self, flatten=False, dtype=None, index=None):
@@ -25,23 +36,11 @@ class NewDataField:
             data = data[index]
         return data
 
-    def __getattr__(self, name):
-        return getattr(self._field, name)
 
-    def __repr__(self) -> str:
-        return repr(self._field)
-
-
-class NewMetadataField:
+class NewMetadataField(WrappedField):
     def __init__(self, field, **kwargs):
-        self._field = field
+        super().__init__(field)
         self._metadata = kwargs
-
-    def __getattr__(self, name):
-        return getattr(self._field, name)
-
-    def __repr__(self) -> str:
-        return repr(self._field)
 
     def metadata(self, *args, **kwargs):
         if len(args) == 1 and args[0] in self._metadata:
