@@ -41,7 +41,7 @@ class NewMetadataField:
     def __repr__(self) -> str:
         return repr(self._field)
 
-    def metadata(self, name, **kwargs):
-        if name in self._metadata:
-            return self._metadata[name]
-        return self._field.metadata(name, **kwargs)
+    def metadata(self, *args, **kwargs):
+        if len(args) == 1 and args[0] in self._metadata:
+            return self._metadata[args[0]]
+        return self._field.metadata(*args, **kwargs)
