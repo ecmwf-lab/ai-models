@@ -47,6 +47,7 @@ dependencies = [
     "multiurl",
     "gputil",
     "earthkit-meteo",
+    "earthkit-regrid",
     "pyyaml",
     "tqdm",
 ]
