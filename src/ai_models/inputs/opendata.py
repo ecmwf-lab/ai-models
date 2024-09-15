@@ -28,7 +28,7 @@ CONSTANTS = (
     "slor",
 )
 
-CONSTANTS_URL = "https://get.ecmwf.int/repository/test-data/ai-models/opendata/constants.grib2"
+CONSTANTS_URL = "https://get.ecmwf.int/repository/test-data/ai-models/opendata/constants-{resol}.grib2"
 
 
 class OpenDataInput(RequestBasedInput):
@@ -62,12 +62,12 @@ class OpenDataInput(RequestBasedInput):
 
         if interp:
             logging.debug("Interpolating from %s to %s", source, grid)
-            return Interpolate(grid, source)
+            return (Interpolate(grid, source), source)
         else:
-            return lambda x: x
+            return (lambda x: x, source)
 
     def pl_load_source(self, **kwargs):
-        pproc = self._adjust(kwargs)
+        pproc, _ = self._adjust(kwargs)
         kwargs["levtype"] = "pl"
         request = kwargs.copy()
 
@@ -87,7 +87,7 @@ class OpenDataInput(RequestBasedInput):
         return self.check_pl(pproc(ekd.from_source("ecmwf-open-data", **kwargs)), request)
 
     def sfc_load_source(self, **kwargs):
-        pproc = self._adjust(kwargs)
+        pproc, resol = self._adjust(kwargs)
         kwargs["levtype"] = "sfc"
         request = kwargs.copy()
 
@@ -117,7 +117,8 @@ class OpenDataInput(RequestBasedInput):
             constants = []
 
             cachedir = os.path.expanduser("~/.cache/ai-models")
-            basename = os.path.basename(CONSTANTS_URL)
+            constant_url = CONSTANTS_URL.format(resol=resol)
+            basename = os.path.basename(constant_url)
 
             if not os.path.exists(cachedir):
                 os.makedirs(cachedir)
@@ -125,8 +126,8 @@ class OpenDataInput(RequestBasedInput):
             path = os.path.join(cachedir, basename)
 
             if not os.path.exists(path):
-                logging.info("Downloading %s to %s", CONSTANTS_URL, path)
-                download(CONSTANTS_URL, path + ".tmp")
+                logging.info("Downloading %s to %s", constant_url, path)
+                download(constant_url, path + ".tmp")
                 os.rename(path + ".tmp", path)
 
             ds = ekd.from_source("file", path)
@@ -169,7 +170,7 @@ class OpenDataInput(RequestBasedInput):
         return self.check_sfc(fields, request)
 
     def ml_load_source(self, **kwargs):
-        pproc = self._adjust(kwargs)
+        pproc, _ = self._adjust(kwargs)
         kwargs["levtype"] = "ml"
         request = kwargs.copy()
 
