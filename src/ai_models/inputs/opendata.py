@@ -170,7 +170,7 @@ class OpenDataInput(RequestBasedInput):
         return self.check_sfc(fields, request)
 
     def ml_load_source(self, **kwargs):
-        pproc, _ = self._adjust(kwargs)
+        pproc = self._adjust(kwargs)
         kwargs["levtype"] = "ml"
         request = kwargs.copy()
 
