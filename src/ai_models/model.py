@@ -128,7 +128,7 @@ class Model:
                 # does not return always return recently set keys
                 handle = handle.clone()
 
-            self.archiving[path].add(handle.as_mars())
+            self.archiving[path].add(handle.as_namespace("mars"))
 
     def finalise(self):
         self.output.flush()
