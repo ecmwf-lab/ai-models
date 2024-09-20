@@ -38,12 +38,13 @@ class GribOutputBase(Output):
 
     @cached_property
     def grib_keys(self):
-        edition = self.metadata.pop("edition", 2)
+        edition = self.metadata.pop("edition",1)
 
         _grib_keys = dict(
             edition=edition,
             generatingProcessIdentifier=self.owner.version,
         )
+        
         _grib_keys.update(self.metadata)
 
         return _grib_keys
@@ -57,8 +58,8 @@ class GribOutputBase(Output):
         )
 
     def write(self, data, *args, check=False, **kwargs):
-
         try:
+            kwargs.pop('backgroundProcess')
             handle, path = self.output.write(data, *args, **kwargs)
 
         except Exception:
