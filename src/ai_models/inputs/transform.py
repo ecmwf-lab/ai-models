@@ -25,6 +25,7 @@ class NewDataField(WrappedField):
     def __init__(self, field, data):
         super().__init__(field)
         self._data = data
+        self.shape = data.shape
 
     def to_numpy(self, flatten=False, dtype=None, index=None):
         data = self._data

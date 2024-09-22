@@ -41,7 +41,7 @@ classifiers = [
 
 dependencies = [
     "cdsapi",
-    "earthkit-data>=0.10.1",
+    "earthkit-data>=0.10.3",
     "earthkit-meteo",
     "earthkit-regrid",
     "eccodes>=2.37",
@@ -72,6 +72,7 @@ file = "ai_models.inputs.file:FileInput"
 mars = "ai_models.inputs.mars:MarsInput"
 cds = "ai_models.inputs.cds:CdsInput"
 ecmwf-open-data = "ai_models.inputs.opendata:OpenDataInput"
+opendata = "ai_models.inputs.opendata:OpenDataInput"
 
 [project.entry-points."ai_models.output"]
 file = "ai_models.outputs:FileOutput"

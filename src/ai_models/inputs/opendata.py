@@ -35,10 +35,10 @@ class OpenDataInput(RequestBasedInput):
     WHERE = "OPENDATA"
 
     RESOLS = {
-        (0.25, 0.25): ("0p25", (0.25, 0.25), False),
-        "N320": ("0p25", (0.25, 0.25), True),
-        "O96": ("0p25", (0.25, 0.25), True),
-        # (0.1, 0.1): ("0p25", (0.25, 0.25), False),
+        (0.25, 0.25): ("0p25", (0.25, 0.25), False, False),
+        "N320": ("0p25", (0.25, 0.25), True, False),
+        "O96": ("0p25", (0.25, 0.25), True, False),
+        (0.1, 0.1): ("0p25", (0.25, 0.25), True, True),
     }
 
     def __init__(self, owner, **kwargs):
@@ -56,12 +56,15 @@ class OpenDataInput(RequestBasedInput):
         if isinstance(grid, list):
             grid = tuple(grid)
 
-        kwargs["resol"], source, interp = self.RESOLS[grid]
+        kwargs["resol"], source, interp, oversampling = self.RESOLS[grid]
         r = dict(**kwargs)
         r.update(self.owner.retrieve)
 
         if interp:
-            logging.debug("Interpolating from %s to %s", source, grid)
+
+            logging.info("Interpolating input data from %s to %s.", source, grid)
+            if oversampling:
+                logging.warning("This will oversample the input data.")
             return Interpolate(grid, source)
         else:
             return lambda x: x

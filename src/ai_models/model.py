@@ -127,7 +127,7 @@ class Model:
                 # does not return always return recently set keys
                 handle = handle.clone()
 
-            self.archiving[path].add(handle.as_mars())
+            self.archiving[path].add(handle.as_namespace("mars"))
 
     def finalise(self):
         self.output.flush()
@@ -536,6 +536,8 @@ class Model:
         accumulations_shape=None,
         ignore=None,
     ):
+        LOG.info("Starting date is %s", self.start_datetime)
+        LOG.info("Writing input fields")
         if ignore is None:
             ignore = []
 
@@ -553,7 +555,7 @@ class Model:
 
             if accumulations is not None:
                 if accumulations_template is None:
-                    accumulations_template = fields.sel(param="2t")[0]
+                    accumulations_template = fields.sel(param="msl")[0]
 
                 if accumulations_shape is None:
                     accumulations_shape = accumulations_template.shape

@@ -8,6 +8,7 @@
 import logging
 
 import earthkit.regrid as ekr
+import tqdm
 from earthkit.data.indexing.fieldlist import FieldArray
 
 from .transform import NewDataField
@@ -22,7 +23,9 @@ class Interpolate:
 
     def __call__(self, ds):
         result = []
-        for f in ds:
+        for f in tqdm.tqdm(ds, delay=0.5, desc="Interpolating", leave=False):
             data = ekr.interpolate(f.to_numpy(), dict(grid=self.source), dict(grid=self.grid))
             result.append(NewDataField(f, data))
+
+        LOG.info("Interpolated %d fields. Input shape %s, output shape %s.", len(result), ds[0].shape, result[0].shape)
         return FieldArray(result)
