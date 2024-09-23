@@ -7,25 +7,35 @@
 
 import logging
 
+import earthkit.data as ekd
 import earthkit.regrid as ekr
 import tqdm
-from earthkit.data.indexing.fieldlist import FieldArray
-
-from .transform import NewDataField
+from earthkit.data.core.temporary import temp_file
 
 LOG = logging.getLogger(__name__)
 
 
 class Interpolate:
-    def __init__(self, grid, source):
+    def __init__(self, grid, source, metadata):
         self.grid = list(grid) if isinstance(grid, tuple) else grid
         self.source = list(source) if isinstance(source, tuple) else source
+        self.metadata = metadata
 
     def __call__(self, ds):
+        tmp = temp_file()
+
+        out = ekd.new_grib_output(tmp.path)
+
         result = []
         for f in tqdm.tqdm(ds, delay=0.5, desc="Interpolating", leave=False):
             data = ekr.interpolate(f.to_numpy(), dict(grid=self.source), dict(grid=self.grid))
-            result.append(NewDataField(f, data))
+            out.write(data, template=f, **self.metadata)
 
-        LOG.info("Interpolated %d fields. Input shape %s, output shape %s.", len(result), ds[0].shape, result[0].shape)
-        return FieldArray(result)
+        out.close()
+
+        result = ekd.from_source("file", tmp.path)
+        result._tmp = tmp
+
+        print("Interpolated data", tmp.path)
+
+        return result

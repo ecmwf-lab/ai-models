@@ -7,27 +7,33 @@
 
 import logging
 
+import earthkit.data as ekd
+import tqdm
+from earthkit.data.core.temporary import temp_file
 from earthkit.data.indexing.fieldlist import FieldArray
-
-from .transform import NewDataField
-from .transform import NewMetadataField
 
 LOG = logging.getLogger(__name__)
 
+G = 9.80665  # Same a pgen
 
-def make_z_from_gh(previous):
-    g = 9.80665  # Same a pgen
 
-    def _proc(ds):
+def make_z_from_gh(ds):
 
-        ds = previous(ds)
+    tmp = temp_file()
 
-        result = []
-        for f in ds:
-            if f.metadata("param") == "gh":
-                result.append(NewMetadataField(NewDataField(f, f.to_numpy() * g), param="z"))
-            else:
-                result.append(f)
-        return FieldArray(result)
+    out = ekd.new_grib_output(tmp.path)
+    other = []
 
-    return _proc
+    for f in tqdm.tqdm(ds, delay=0.5, desc="GH to Z", leave=False):
+
+        if f.metadata("param") == "gh":
+            out.write(f.to_numpy() * G, template=f, param="z")
+        else:
+            other.append(f)
+
+    out.close()
+
+    result = FieldArray(other) + ekd.from_source("file", tmp.path)
+    result._tmp = tmp
+
+    return result
