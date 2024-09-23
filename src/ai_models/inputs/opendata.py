@@ -61,6 +61,9 @@ class OpenDataInput(RequestBasedInput):
         self.owner = owner
 
     def _adjust(self, kwargs):
+
+        kwargs.setdefault("step", 0)
+
         if "level" in kwargs:
             # OpenData uses levelist instead of level
             kwargs["levelist"] = kwargs.pop("level")
@@ -105,7 +108,7 @@ class OpenDataInput(RequestBasedInput):
             kwargs["param"] = param
             gh_to_z = make_z_from_gh
 
-        logging.debug("load source ecmwf-open-data %s", kwargs)
+        logging.info("ecmwf-open-data %s", kwargs)
 
         opendata = recenter(ekd.from_source("ecmwf-open-data", **kwargs))
         opendata = gh_to_z(opendata)
