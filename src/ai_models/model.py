@@ -5,6 +5,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import base64
 import datetime
 import json
 import logging
@@ -14,10 +15,10 @@ import time
 from collections import defaultdict
 from functools import cached_property
 
-import climetlab as cml
+import earthkit.data as ekd
 import entrypoints
 import numpy as np
-from climetlab.utils.humanize import seconds
+from earthkit.data.utils.humanize import seconds
 from multiurl import download
 
 from .checkpoint import peek
@@ -88,7 +89,6 @@ class Model:
         LOG.debug("Asset directory is %s", self.assets)
 
         try:
-            # For CliMetLab, when date=-1
             self.date = int(self.date)
         except ValueError:
             pass
@@ -128,7 +128,7 @@ class Model:
                 # does not return always return recently set keys
                 handle = handle.clone()
 
-            self.archiving[path].add(handle.as_mars())
+            self.archiving[path].add(handle.as_namespace("mars"))
 
     def finalise(self):
         self.output.flush()
@@ -154,13 +154,13 @@ class Model:
                     def json_default(obj):
                         if isinstance(obj, set):
                             if len(obj) > 1:
-                                return list(obj)
+                                return sorted(list(obj))
                             else:
                                 return obj.pop()
-                        return obj
+                        raise TypeError
 
                     print(
-                        json.dumps(json_requests, separators=(",", ":"), default=json_default),
+                        json.dumps(json_requests, separators=(",", ":"), default=json_default, sort_keys=True),
                         file=f,
                     )
 
@@ -375,31 +375,66 @@ class Model:
             param, level = self.param_level_pl
 
             r = dict(
-                levtype="pl",
-                levelist=level,
-                param=param,
                 date=date,
                 time=time,
             )
             r.update(first)
             first = {}
 
-            r.update(self._requests_extra)
+            if param and level:
 
-            self.patch_retrieve_request(r)
-
-            result.append(dict(**r))
-
-            r.update(
-                dict(
-                    levtype="sfc",
-                    param=self.param_sfc,
+                # PL
+                r.update(
+                    dict(
+                        levtype="pl",
+                        levelist=level,
+                        param=param,
+                        date=date,
+                        time=time,
+                    )
                 )
-            )
-            r.pop("levelist", None)
 
-            self.patch_retrieve_request(r)
-            result.append(dict(**r))
+                r.update(self._requests_extra)
+
+                self.patch_retrieve_request(r)
+
+                result.append(dict(**r))
+
+            # ML
+            param, level = self.param_level_ml
+
+            if param and level:
+                r.update(
+                    dict(
+                        levtype="ml",
+                        levelist=level,
+                        param=param,
+                        date=date,
+                        time=time,
+                    )
+                )
+
+                r.update(self._requests_extra)
+
+                self.patch_retrieve_request(r)
+
+                result.append(dict(**r))
+
+            param = self.param_sfc
+            if param:
+                # SFC
+                r.update(
+                    dict(
+                        levtype="sfc",
+                        param=self.param_sfc,
+                        date=date,
+                        time=time,
+                        levelist="off",
+                    )
+                )
+
+                self.patch_retrieve_request(r)
+                result.append(dict(**r))
 
         return result
 
@@ -471,8 +506,8 @@ class Model:
     def forcing_and_constants(self, date, param):
         source = self.all_fields[:1]
 
-        ds = cml.load_source(
-            "constants",
+        ds = ekd.from_source(
+            "forcings",
             source,
             date=date,
             param=param,
@@ -488,7 +523,7 @@ class Model:
 
     @cached_property
     def start_datetime(self):
-        return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()
+        return self.all_fields.order_by(valid_datetime="ascending")[-1].datetime()["valid_time"]
 
     @property
     def constant_fields(self):
@@ -502,15 +537,19 @@ class Model:
         accumulations_shape=None,
         ignore=None,
     ):
+        LOG.info("Starting date is %s", self.start_datetime)
+        LOG.info("Writing input fields")
         if ignore is None:
             ignore = []
+
+        fields.save("input.grib")
 
         with self.timer("Writing step 0"):
             for field in fields:
                 if field.metadata("shortName") in ignore:
                     continue
 
-                if field.valid_datetime() == self.start_datetime:
+                if field.datetime()["valid_time"] == self.start_datetime:
                     self.write(
                         None,
                         template=field,
@@ -519,23 +558,54 @@ class Model:
 
             if accumulations is not None:
                 if accumulations_template is None:
-                    accumulations_template = fields.sel(param="2t")[0]
+                    accumulations_template = fields.sel(param="msl")[0]
 
                 if accumulations_shape is None:
                     accumulations_shape = accumulations_template.shape
 
-                for param in accumulations:
-                    self.write(
-                        np.zeros(accumulations_shape, dtype=np.float32),
-                        stepType="accum",
-                        template=accumulations_template,
-                        param=param,
-                        startStep=0,
-                        endStep=0,
-                        date=int(self.start_datetime.strftime("%Y%m%d")),
-                        time=int(self.start_datetime.strftime("%H%M")),
-                        check=True,
-                    )
+                if accumulations_template.metadata("edition") == 1:
+                    for param in accumulations:
+
+                        self.write(
+                            np.zeros(accumulations_shape, dtype=np.float32),
+                            stepType="accum",
+                            template=accumulations_template,
+                            param=param,
+                            startStep=0,
+                            endStep=0,
+                            date=int(self.start_datetime.strftime("%Y%m%d")),
+                            time=int(self.start_datetime.strftime("%H%M")),
+                            check=True,
+                        )
+                else:
+                    # # TODO: Remove this when accumulations are supported for GRIB edition 2
+
+                    template = """
+                    R1JJQv//AAIAAAAAAAAA3AAAABUBAGIAABsBAQfoCRYGAAAAAQAAABECAAEAAQAJBAIwMDAxAAAA
+                    SAMAAA/XoAAAAAAG////////////////////AAAFoAAAAtEAAAAA/////wVdSoAAAAAAMIVdSoAV
+                    cVlwAAPQkAAD0JAAAAAAOgQAAAAIAcEC//8AAAABAAAAAAH//////////////wfoCRYGAAABAAAA
+                    AAECAQAAAAD/AAAAAAAAABUFAA/XoAAAAAAAAIAKAAAAAAAAAAYG/wAAAAUHNzc3N0dSSUL//wAC
+                    AAAAAAAAANwAAAAVAQBiAAAbAQEH6AkWDAAAAAEAAAARAgABAAEACQQBMDAwMQAAAEgDAAAP16AA
+                    AAAABv///////////////////wAABaAAAALRAAAAAP////8FXUqAAAAAADCFXUqAFXFZcAAD0JAA
+                    A9CQAAAAADoEAAAACAHBAv//AAAAAQAAAAAB//////////////8H6AkWDAAAAQAAAAABAgEAAAAA
+                    /wAAAAAAAAAVBQAP16AAAAAAAACACgAAAAAAAAAGBv8AAAAFBzc3Nzc=
+                    """
+
+                    template = base64.b64decode(template)
+                    accumulations_template = ekd.from_source("memory", template)[0]
+
+                    for param in accumulations:
+                        self.write(
+                            np.zeros(accumulations_shape, dtype=np.float32),
+                            stepType="accum",
+                            template=accumulations_template,
+                            param=param,
+                            startStep=0,
+                            endStep=0,
+                            date=int(self.start_datetime.strftime("%Y%m%d")),
+                            time=int(self.start_datetime.strftime("%H%M")),
+                            check=True,
+                        )
 
 
 def load_model(name, **kwargs):

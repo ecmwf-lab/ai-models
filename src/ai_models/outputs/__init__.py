@@ -10,7 +10,7 @@ import logging
 import warnings
 from functools import cached_property
 
-import climetlab as cml
+import earthkit.data as ekd
 import entrypoints
 import numpy as np
 
@@ -50,7 +50,7 @@ class GribOutputBase(Output):
 
     @cached_property
     def output(self):
-        return cml.new_grib_output(
+        return ekd.new_grib_output(
             self.path,
             split_output=True,
             **self.grib_keys,
@@ -67,6 +67,18 @@ class GribOutputBase(Output):
                     raise ValueError(f"NaN values found in field. args={args} kwargs={kwargs}")
                 if np.isinf(data).any():
                     raise ValueError(f"Infinite values found in field. args={args} kwargs={kwargs}")
+
+            options = {}
+            options.update(self.grib_keys)
+            options.update(kwargs)
+            LOG.error("Failed to write data to %s %s", args, options)
+            cmd = []
+            for k, v in options.items():
+                if isinstance(v, (int, str, float)):
+                    cmd.append("%s=%s" % (k, v))
+
+            LOG.error("grib_set -s%s", ",".join(cmd))
+
             raise
 
         if check:

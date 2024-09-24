@@ -40,22 +40,26 @@ classifiers = [
 ]
 
 dependencies = [
-    "entrypoints",
-    "requests",
-    "climetlab>=0.23.0",
-    "multiurl",
-    "ecmwflibs>=0.6.1",
-    "gputil",
+    "cdsapi",
+    "earthkit-data>=0.10.3",
     "earthkit-meteo",
+    "earthkit-regrid",
+    "eccodes>=2.37",
+    "ecmwf-api-client",
+    "ecmwf-opendata",
+    "entrypoints",
+    "gputil",
+    "multiurl",
     "pyyaml",
+    "requests",
     "tqdm",
 ]
 
 
 [project.urls]
-Homepage = "https://github.com/ecmwf/ai-models/"
-Repository = "https://github.com/ecmwf/ai-models/"
-Issues = "https://github.com/ecmwf/ai-models/issues"
+Homepage = "https://github.com/ecmwf-lab/ai-models/"
+Repository = "https://github.com/ecmwf-lab/ai-models/"
+Issues = "https://github.com/ecmwf-lab/ai-models/issues"
 
 [project.scripts]
 ai-models = "ai_models.__main__:main"
@@ -64,10 +68,11 @@ ai-models = "ai_models.__main__:main"
 version_file = "src/ai_models/_version.py"
 
 [project.entry-points."ai_models.input"]
-file = "ai_models.inputs:FileInput"
-mars = "ai_models.inputs:MarsInput"
-cds = "ai_models.inputs:CdsInput"
-opendata = "ai_models.inputs:OpenDataInput"
+file = "ai_models.inputs.file:FileInput"
+mars = "ai_models.inputs.mars:MarsInput"
+cds = "ai_models.inputs.cds:CdsInput"
+ecmwf-open-data = "ai_models.inputs.opendata:OpenDataInput"
+opendata = "ai_models.inputs.opendata:OpenDataInput"
 
 [project.entry-points."ai_models.output"]
 file = "ai_models.outputs:FileOutput"
