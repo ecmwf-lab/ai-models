@@ -4,7 +4,7 @@ import sys
 import tempfile
 from functools import cached_property
 
-import climetlab as cml
+import earthkit.data as ekd
 
 from ..model import Model
 from .api import RemoteAPI
@@ -45,7 +45,7 @@ class RemoteModel(Model):
 
             self.api.run(self.cfg)
 
-            ds = cml.load_source("file", output_file)
+            ds = ekd.from_source("file", output_file)
             for field in ds:
                 self.write(None, template=field)
 

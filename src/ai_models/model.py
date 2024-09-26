@@ -5,6 +5,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import base64
 import datetime
 import json
 import logging
@@ -88,7 +89,6 @@ class Model:
         LOG.debug("Asset directory is %s", self.assets)
 
         try:
-            # For CliMetLab, when date=-1
             self.date = int(self.date)
         except ValueError:
             pass
@@ -537,8 +537,12 @@ class Model:
         accumulations_shape=None,
         ignore=None,
     ):
+        LOG.info("Starting date is %s", self.start_datetime)
+        LOG.info("Writing input fields")
         if ignore is None:
             ignore = []
+
+        fields.save("input.grib")
 
         with self.timer("Writing step 0"):
             for field in fields:
@@ -554,23 +558,54 @@ class Model:
 
             if accumulations is not None:
                 if accumulations_template is None:
-                    accumulations_template = fields.sel(param="2t")[0]
+                    accumulations_template = fields.sel(param="msl")[0]
 
                 if accumulations_shape is None:
                     accumulations_shape = accumulations_template.shape
 
-                for param in accumulations:
-                    self.write(
-                        np.zeros(accumulations_shape, dtype=np.float32),
-                        stepType="accum",
-                        template=accumulations_template,
-                        param=param,
-                        startStep=0,
-                        endStep=0,
-                        date=int(self.start_datetime.strftime("%Y%m%d")),
-                        time=int(self.start_datetime.strftime("%H%M")),
-                        check=True,
-                    )
+                if accumulations_template.metadata("edition") == 1:
+                    for param in accumulations:
+
+                        self.write(
+                            np.zeros(accumulations_shape, dtype=np.float32),
+                            stepType="accum",
+                            template=accumulations_template,
+                            param=param,
+                            startStep=0,
+                            endStep=0,
+                            date=int(self.start_datetime.strftime("%Y%m%d")),
+                            time=int(self.start_datetime.strftime("%H%M")),
+                            check=True,
+                        )
+                else:
+                    # # TODO: Remove this when accumulations are supported for GRIB edition 2
+
+                    template = """
+                    R1JJQv//AAIAAAAAAAAA3AAAABUBAGIAABsBAQfoCRYGAAAAAQAAABECAAEAAQAJBAIwMDAxAAAA
+                    SAMAAA/XoAAAAAAG////////////////////AAAFoAAAAtEAAAAA/////wVdSoAAAAAAMIVdSoAV
+                    cVlwAAPQkAAD0JAAAAAAOgQAAAAIAcEC//8AAAABAAAAAAH//////////////wfoCRYGAAABAAAA
+                    AAECAQAAAAD/AAAAAAAAABUFAA/XoAAAAAAAAIAKAAAAAAAAAAYG/wAAAAUHNzc3N0dSSUL//wAC
+                    AAAAAAAAANwAAAAVAQBiAAAbAQEH6AkWDAAAAAEAAAARAgABAAEACQQBMDAwMQAAAEgDAAAP16AA
+                    AAAABv///////////////////wAABaAAAALRAAAAAP////8FXUqAAAAAADCFXUqAFXFZcAAD0JAA
+                    A9CQAAAAADoEAAAACAHBAv//AAAAAQAAAAAB//////////////8H6AkWDAAAAQAAAAABAgEAAAAA
+                    /wAAAAAAAAAVBQAP16AAAAAAAACACgAAAAAAAAAGBv8AAAAFBzc3Nzc=
+                    """
+
+                    template = base64.b64decode(template)
+                    accumulations_template = ekd.from_source("memory", template)[0]
+
+                    for param in accumulations:
+                        self.write(
+                            np.zeros(accumulations_shape, dtype=np.float32),
+                            stepType="accum",
+                            template=accumulations_template,
+                            param=param,
+                            startStep=0,
+                            endStep=0,
+                            date=int(self.start_datetime.strftime("%Y%m%d")),
+                            time=int(self.start_datetime.strftime("%H%M")),
+                            check=True,
+                        )
 
 
 def load_model(name, **kwargs):

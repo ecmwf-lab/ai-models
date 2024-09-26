@@ -1,0 +1,33 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: ai-models
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Baudouin
+    family-names: Raoult
+    affiliation: ECMWF
+  - given-names: Florian
+    family-names: Pinault
+  - given-names: Gert
+    family-names: Mertes
+    affiliation: ECMWF
+  - given-names: Jesper Sören
+    family-names: Dramsch
+    affiliation: ECMWF
+    orcid: 'https://orcid.org/0000-0001-8273-905X'
+  - given-names: Matthew
+    family-names: Chantry
+    affiliation: ECMWF
+repository-code: 'https://github.com/ecmwf-lab/ai-models'
+abstract: >-
+  ai-models is used to run AI-based weather forecasting
+  models. These models need to be installed independently.
+keywords:
+  - ai
+  - weather forecasting
+license: Apache-2.0

@@ -177,3 +177,4 @@ bar
 dev/
 *.out
 _version.py
+*.tar
