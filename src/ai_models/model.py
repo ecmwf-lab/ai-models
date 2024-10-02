@@ -43,7 +43,8 @@ class Timer:
 
 
 class ArchiveCollector:
-    UNIQUE = {"date", "hdate", "time", "referenceDate", "type", "stream", "expver"}
+    UNIQUE = {"date", "hdate", "time",
+              "referenceDate", "type", "stream", "expver"}
 
     def __init__(self) -> None:
         self.expect = 0
@@ -55,7 +56,8 @@ class ArchiveCollector:
             self.request[k].add(str(v))
             if k in self.UNIQUE:
                 if len(self.request[k]) > 1:
-                    raise ValueError(f"Field {field} has different values for {k}: {self.request[k]}")
+                    raise ValueError(
+                        f"Field {field} has different values for {k}: {self.request[k]}")
 
 
 class Model:
@@ -160,7 +162,8 @@ class Model:
                         raise TypeError
 
                     print(
-                        json.dumps(json_requests, separators=(",", ":"), default=json_default, sort_keys=True),
+                        json.dumps(json_requests, separators=(
+                            ",", ":"), default=json_default, sort_keys=True),
                         file=f,
                     )
 
@@ -170,7 +173,8 @@ class Model:
             if not os.path.exists(asset):
                 os.makedirs(os.path.dirname(asset), exist_ok=True)
                 LOG.info("Downloading %s", asset)
-                download(self.download_url.format(file=file), asset + ".download")
+                download(self.download_url.format(
+                    file=file), asset + ".download")
                 os.rename(asset + ".download", asset)
 
     @property
@@ -443,7 +447,8 @@ class Model:
         def filter_constant(request):
             # We check for 'sfc' because param 'z' can be ambiguous
             if request.get("levtype") == "sfc":
-                param = set(self.constant_fields) & set(request.get("param", []))
+                param = set(self.constant_fields) & set(
+                    request.get("param", []))
                 if param:
                     request["param"] = list(param)
                     return True
@@ -454,7 +459,8 @@ class Model:
             # TODO: We assume here that prognostic fields are
             # the ones that are not constant. This may not always be true
             if request.get("levtype") == "sfc":
-                param = set(request.get("param", [])) - set(self.constant_fields)
+                param = set(request.get("param", [])) - \
+                    set(self.constant_fields)
                 if param:
                     request["param"] = list(param)
                     return True
@@ -496,7 +502,8 @@ class Model:
 
     def parse_model_args(self, args):
         if args:
-            raise NotImplementedError(f"This model does not accept arguments {args}")
+            raise NotImplementedError(
+                f"This model does not accept arguments {args}")
 
     def provenance(self):
         from .provenance import gather_provenance_info
@@ -541,8 +548,6 @@ class Model:
         LOG.info("Writing input fields")
         if ignore is None:
             ignore = []
-
-        fields.save("input.grib")
 
         with self.timer("Writing step 0"):
             for field in fields:
@@ -592,7 +597,8 @@ class Model:
                     """
 
                     template = base64.b64decode(template)
-                    accumulations_template = ekd.from_source("memory", template)[0]
+                    accumulations_template = ekd.from_source(
+                        "memory", template)[0]
 
                     for param in accumulations:
                         self.write(
