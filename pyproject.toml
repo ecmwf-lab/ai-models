@@ -50,6 +50,7 @@ dependencies = [
     "entrypoints",
     "gputil",
     "multiurl",
+    "numpy<2",
     "pyyaml",
     "requests",
     "tqdm",
