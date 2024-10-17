@@ -542,8 +542,6 @@ class Model:
         if ignore is None:
             ignore = []
 
-        fields.save("input.grib")
-
         with self.timer("Writing step 0"):
             for field in fields:
                 if field.metadata("shortName") in ignore:
