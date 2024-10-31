@@ -542,6 +542,10 @@ class Model:
         if ignore is None:
             ignore = []
 
+        if all(map(lambda x: x is None, fields.metadata("shortName", default = None))):
+            LOG.warning("Could not find 'shortName' in metadata. Are you using a grib input? Skipping writing input fields")
+            return
+
         with self.timer("Writing step 0"):
             for field in fields:
                 if field.metadata("shortName") in ignore:

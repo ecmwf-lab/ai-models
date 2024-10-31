@@ -9,6 +9,7 @@ import itertools
 import logging
 import warnings
 from functools import cached_property
+from collections import defaultdict
 
 import earthkit.data as ekd
 import entrypoints
@@ -109,6 +110,40 @@ class FileOutput(GribOutputBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         LOG.info("Writing results to %s", self.path)
+
+class NetCDFOutput(Output):
+    def __init__(self, owner, path, metadata, **kwargs):
+        metadata.setdefault("stream", "oper")
+        metadata.setdefault("expver", owner.expver)
+        metadata.setdefault("class", "ml")
+
+        self.path = path
+        self.owner = owner
+        self.metadata = metadata
+        
+        self._outputs = defaultdict(list)
+
+    def write(self, data, *args, check = False, **kwargs):
+        template = kwargs.pop("template")
+        step = kwargs.pop("step")
+        import xarray as xr
+
+        xarray_obj: xr.DataArray = template.to_xarray()
+        xarray_obj.data = data
+        xarray_obj = xarray_obj.assign_coords(step = step)
+        if 'pl' in xarray_obj.coords:
+            xarray_obj = xarray_obj.expand_dims('pl')
+        if 'ml' in xarray_obj.coords:
+            xarray_obj = xarray_obj.expand_dims('ml')
+
+        self._outputs[step].append(xarray_obj)
+
+    def flush(self, *args, **kwargs):
+        import xarray as xr
+
+        output = xr.concat(map(xr.merge, self._outputs.values()), dim = 'step')
+        output.attrs.update(self.metadata)
+        output.to_netcdf(self.path)
 
 
 class NoneOutput(Output):
