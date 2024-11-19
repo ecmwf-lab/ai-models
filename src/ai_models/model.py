@@ -260,7 +260,7 @@ class Model:
         assert isinstance(time, int)
         if time < 100:
             time *= 100
-        assert time in (0, 600, 1200, 1800), time
+        # assert time in (0, 600, 1200, 1800), time
 
         lagged = self.lagged
         if not lagged:
@@ -300,7 +300,7 @@ class Model:
         if time < 100:
             time *= 100
 
-        assert time in (0, 600, 1200, 1800), time
+        # assert time in (0, 600, 1200, 1800), time
 
         full = datetime.datetime(
             date // 10000,
