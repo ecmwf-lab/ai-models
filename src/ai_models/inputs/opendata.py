@@ -45,8 +45,8 @@ RESOLS = {
             Nj=1801,
         ),
     ),
-    # "N320": ("0p25", (0.25, 0.25), True, False, dict(gridType='reduced_gg')),
-    # "O96": ("0p25", (0.25, 0.25), True, False, dict(gridType='reduced_gg', )),
+    "N320": ("0p25", (0.25, 0.25), True, False, dict(gridType="reduced_gg", N=320)),
+    "O96": ("0p25", (0.25, 0.25), True, False, dict(gridType="reduced_gg", N=96)),
 }
 
 

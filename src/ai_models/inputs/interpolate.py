@@ -21,6 +21,8 @@ class Interpolate:
         self.source = list(source) if isinstance(source, tuple) else source
         self.metadata = metadata
 
+        self._reduced_gg = metadata.get("gridType") == "reduced_gg"
+
     def __call__(self, ds):
         tmp = temp_file()
 
@@ -29,7 +31,16 @@ class Interpolate:
         result = []
         for f in tqdm.tqdm(ds, delay=0.5, desc="Interpolating", leave=False):
             data = ekr.interpolate(f.to_numpy(), dict(grid=self.source), dict(grid=self.grid))
-            out.write(data, template=f, **self.metadata)
+            template = f
+
+            if self._reduced_gg:
+                # template is missing the pl matrix required to output a reduced_gg grib
+                # this is a hack to let earthkit generate it for us
+                template = None
+                keys = ("shortName", "levelist", "date", "time", "step", "number")
+                self.metadata.update({key: f._metadata[key] for key in keys if key in f._metadata})
+
+            out.write(data, template=template, **self.metadata)
 
         out.close()
 

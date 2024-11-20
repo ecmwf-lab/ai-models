@@ -58,6 +58,9 @@ class GribOutputBase(Output):
 
     def write(self, data, *args, check=False, **kwargs):
 
+        if kwargs.get("param") in ("cp", "tp"):
+            kwargs["edition"] = 1
+
         try:
             handle, path = self.output.write(data, *args, **kwargs)
 
@@ -85,9 +88,9 @@ class GribOutputBase(Output):
             # Check that the GRIB keys are as expected
 
             if kwargs.get("expver") is None:
-                ignore = ("template", "check_nans", "expver", "class", "type", "stream")
+                ignore = ("edition", "template", "check_nans", "expver", "class", "type", "stream")
             else:
-                ignore = ("template", "check_nans")
+                ignore = ("edition", "template", "check_nans")
 
             for key, value in itertools.chain(self.grib_keys.items(), kwargs.items()):
                 if key in ignore:

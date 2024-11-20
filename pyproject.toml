@@ -44,7 +44,7 @@ dependencies = [
     "earthkit-data>=0.10.3",
     "earthkit-meteo",
     "earthkit-regrid",
-    "eccodes>=2.37",
+    "eccodes>=2.38.3",
     "ecmwf-api-client",
     "ecmwf-opendata",
     "entrypoints",
