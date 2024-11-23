@@ -22,11 +22,7 @@ from .transform import NewMetadataField
 
 LOG = logging.getLogger(__name__)
 
-CONSTANTS = (
-    "z",
-    "sdor",
-    "slor",
-)
+CONSTANTS = ("z", "sdor", "slor")
 
 CONSTANTS_URL = "https://get.ecmwf.int/repository/test-data/ai-models/opendata/constants-{resol}.grib2"
 

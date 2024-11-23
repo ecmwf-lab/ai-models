@@ -58,9 +58,6 @@ class GribOutputBase(Output):
 
     def write(self, data, *args, check=False, **kwargs):
 
-        if kwargs.get("param") in ("cp", "tp"):
-            kwargs["edition"] = 1
-
         try:
             handle, path = self.output.write(data, *args, **kwargs)
 
