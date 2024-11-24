@@ -112,6 +112,11 @@ def _main(argv):
     )
 
     parser.add_argument(
+        "--interpolate",
+        help="Should the results be interpolated",
+    )
+
+    parser.add_argument(
         "--date",
         default="-1",
         help="For which analysis date to start the inference (default: yesterday)",

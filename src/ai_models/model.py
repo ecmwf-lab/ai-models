@@ -131,7 +131,7 @@ class Model:
             self.archiving[path].add(handle.as_namespace("mars"))
 
     def finalise(self):
-        self.output.flush()
+        self.output.close()
 
         if self.archive_requests:
             with open(self.archive_requests, "w") as f:

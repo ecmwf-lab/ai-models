@@ -21,7 +21,7 @@ class Output:
     def write(self, *args, **kwargs):
         pass
 
-    def flush(self, *args, **kwargs):
+    def close(self):
         pass
 
 
@@ -104,6 +104,9 @@ class GribOutputBase(Output):
 
         return handle, path
 
+    def close(self):
+        self.output.close()
+
 
 class FileOutput(GribOutputBase):
     def __init__(self, *args, **kwargs):
@@ -167,8 +170,8 @@ class HindcastReLabel:
 
         return self.output.write(*args, **kwargs)
 
-    def flush(self, *args, **kwargs):
-        return self.output.flush(*args, **kwargs)
+    def close(self):
+        return self.output.close()
 
 
 class NoLabelling:
@@ -181,8 +184,40 @@ class NoLabelling:
         kwargs["deleteLocalDefinition"] = 1
         return self.output.write(*args, **kwargs)
 
-    def flush(self, *args, **kwargs):
-        return self.output.flush(*args, **kwargs)
+    def close(self):
+        return self.output.close()
+
+
+class InterpolatedOutput:
+    def __init__(self, owner, output, interpolate, **kwargs):
+        self.owner = owner
+        self.output = output
+        try:
+            self.target = (float(interpolate), float(interpolate))
+        except ValueError:
+            self.target = interpolate.upper()
+
+    @cached_property
+    def interpolator(self):
+        from ..interpolate import Interpolate
+
+        return Interpolate(source=self.owner.grid, target=self.target)
+
+    def write(self, values, template, *args, **kwargs):
+
+        if values is None:
+            values = template.to_numpy(flatten=True)
+            # We need to extract a few more metadata from the template
+            for m in ("date", "time", "step", "param", "paramId", "shortName"):
+                kwargs[m] = template.metadata(m)
+
+        values, metadata = self.interpolator.interpolate(values)
+        kwargs.update(metadata)
+
+        return self.output.write(values, template, *args, **kwargs)
+
+    def close(self):
+        return self.output.close()
 
 
 def get_output(name, owner, *args, **kwargs):
@@ -191,6 +226,11 @@ def get_output(name, owner, *args, **kwargs):
         result = HindcastReLabel(owner, result, **kwargs)
     if owner.expver is None:
         result = NoLabelling(owner, result, **kwargs)
+
+    if kwargs.get("interpolate") is not None:
+        # Interpolate the output
+        result = InterpolatedOutput(owner, result, **kwargs)
+
     return result
 
 

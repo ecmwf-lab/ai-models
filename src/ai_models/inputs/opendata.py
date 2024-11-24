@@ -14,9 +14,9 @@ from earthkit.data.core.temporary import temp_file
 from earthkit.data.indexing.fieldlist import FieldArray
 from multiurl import download
 
+from ..interpolate import Interpolate
 from .base import RequestBasedInput
 from .compute import make_z_from_gh
-from .interpolate import Interpolate
 from .recenter import recenter
 from .transform import NewMetadataField
 
@@ -71,7 +71,7 @@ class OpenDataInput(RequestBasedInput):
         if isinstance(grid, list):
             grid = tuple(grid)
 
-        kwargs["resol"], source, interp, oversampling, metadata = RESOLS[grid]
+        kwargs["resol"], source, interp, oversampling, _ = RESOLS[grid]
         r = dict(**kwargs)
         r.update(self.owner.retrieve)
 
@@ -80,7 +80,7 @@ class OpenDataInput(RequestBasedInput):
             logging.info("Interpolating input data from %s to %s.", source, grid)
             if oversampling:
                 logging.warning("This will oversample the input data.")
-            return Interpolate(grid, source, metadata)
+            return Interpolate(source=source, target=grid)
         else:
             return _identity
 
