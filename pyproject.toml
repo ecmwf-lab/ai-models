@@ -41,7 +41,7 @@ classifiers = [
 
 dependencies = [
     "cdsapi",
-    "earthkit-data>=0.10.3",
+    "earthkit-data>=0.11.3",
     "earthkit-meteo",
     "earthkit-regrid",
     "eccodes>=2.37",
