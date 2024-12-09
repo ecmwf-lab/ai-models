@@ -63,6 +63,7 @@ class Model:
     assets_extra_dir = None
     retrieve = {}  # Extra parameters for retrieve
     version = 1  # To be overriden in subclasses
+    grib_edition = 2  # Default GRIB edition
     grib_extra_metadata = {}  # Extra metadata for grib files
 
     param_level_ml = ([], [])  # param, level
