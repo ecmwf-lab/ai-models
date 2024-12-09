@@ -38,7 +38,7 @@ class GribOutputBase(Output):
 
     @cached_property
     def grib_keys(self):
-        edition = self.metadata.pop("edition", 2)
+        edition = self.metadata.pop("edition", self.owner.grib_edition)
 
         _grib_keys = dict(
             edition=edition,
