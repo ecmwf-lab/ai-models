@@ -1,9 +1,31 @@
 # ai-models
 
+<p align="center">
+  <a href="https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity">
+    <img src="https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity/sandbox_badge.svg" alt="Static Badge">
+  </a>
+
+<a href="https://codecov.io/gh/ecmwf/earthkit-data">
+    <img src="https://codecov.io/gh/ecmwf-lab/ai-models/branch/main/graph/badge.svg" alt="Code Coverage">
+  </a>
+
+<a href="https://opensource.org/licenses/apache-2-0">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0">
+  </a>
+
+<a href="https://github.com/ecmwf/earthkit-data/releases">
+    <img src="https://img.shields.io/github/v/release/ecmwf-lab/ai-models?color=blue&label=Release&style=flat-square" alt="Latest Release">
+  </a>
+</p>
+
 **DISCLAIMER**
-This project is **BETA** and will be **Experimental** for the foreseeable future.
-Interfaces and functionality are likely to change, and the project itself may be scrapped.
-**DO NOT** use this software in any project/software that is operational.
+
+> \[!IMPORTANT\]
+> This project is **BETA** and will be **Experimental** for the foreseeable future.
+> Interfaces and functionality are likely to change, and the project itself may be scrapped.
+> **DO NOT** use this software in any project/software that is operational.
+
+
 
 
 The `ai-models` command is used to run AI-based weather forecasting models. These models need to be installed independently.
