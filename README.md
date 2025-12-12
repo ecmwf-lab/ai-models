@@ -2,11 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity">
-    <img src="https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity/sandbox_badge.svg" alt="Static Badge">
-  </a>
-
-<a href="https://codecov.io/gh/ecmwf/earthkit-data">
-    <img src="https://codecov.io/gh/ecmwf-lab/ai-models/branch/main/graph/badge.svg" alt="Code Coverage">
+    <img src="https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity/archived_badge.svg" alt="Static Badge">
   </a>
 
 <a href="https://opensource.org/licenses/apache-2-0">
@@ -14,16 +10,16 @@
   </a>
 
 <a href="https://github.com/ecmwf/earthkit-data/releases">
-    <img src="https://img.shields.io/github/v/release/ecmwf-lab/ai-models?color=blue&label=Release&style=flat-square" alt="Latest Release">
+    <img src="https://img.shields.io/github/v/release/ecmwf-lab/ai-models?color=blue&label=Release" alt="Latest Release">
   </a>
 </p>
 
 **DISCLAIMER**
 
 > \[!IMPORTANT\]
-> This project is **BETA** and will be **Experimental** for the foreseeable future.
-> Interfaces and functionality are likely to change, and the project itself may be scrapped.
-> **DO NOT** use this software in any project/software that is operational.
+> This software is **Archived** and subject to ECMWF's guidelines on [Software Maturity](https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity).
+>
+> This project is no longer actively maintained or developed. It will remain available for reference or historical purposes, but should **NOT** be used for any active operational purposes.
 
 
 
